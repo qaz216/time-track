@@ -34,7 +34,7 @@ Run the tests (needs Docker running, for Testcontainers):
 
 ## A two-minute tour
 
-1. **Sign in as Sam.** The cursor is in "What have you worked on?". Type anything, Tab to **Project**, type `fin`, Enter, Tab, `9:05-10:42`, Enter. Add another with `1.5`: the project and day are kept. Durations show as h:mm:ss, like Clockify.
+1. **Sign in as Sam.** The cursor is in "What have you worked on?". Type anything, Tab to **Project**, type `fin`, Enter, Tab, `905`, Tab, `1042` (they tidy to 9:05 AM and 10:42 AM, and the duration fills in), Enter. Add another with `1.5`: the project and day are kept. Durations show as h:mm:ss, like Clockify.
 2. Click the clock icon at the right of the bar to switch to timer mode, then START (or press `t`). It ticks in the bar and in the header on every page; STOP or `t` logs it.
 3. Click **Submit week**. The week goes read-only; **Reopen** brings it back.
 4. **Sign in as the admin** and open **Team weeks**: everyone × every week, ✓ for submitted, with Jo's missing week easy to spot. Click a cell to see that week, then **Export CSV**.
@@ -179,10 +179,12 @@ jo@example.com,Jo Chen,2026-09-28,submitted,CTG,CTG-02,Financial Management,Gene
 The page leads with one bar, modelled on Clockify's tracker:
 
 ```
-[ What have you worked on?        ] [⊕ Project] [ 1:30 or 9:00-10:30 ] [ date ] [ ADD ]  ⏱ ☰
+[ What have you worked on?   ] [⊕ Project] [ 1:15 PM ] - [ 2:45 PM ] [ date ] [ 1:30:00 ] [ ADD ]  ⏱ ☰
 ```
 
-- **Description first, free text.** It's the entry's note. Then pick a project, then a time (manual mode) or press START (timer mode). **Pressing Add with the time left empty starts a timer from now**, because "I'm starting this" is the common case and there's no point making you switch modes for it. If a timer is already running, it's logged first. The two icons switch modes, the choice is remembered in the browser, and a running timer always shows in timer mode.
+- **Description first, free text.** It's the entry's note. Then pick a project, then a time (manual mode) or press START (timer mode). **Leaving all three time boxes empty starts a timer from now** (the button says START then), because "I'm starting this" is the common case and there's no point making you switch modes for it. If a timer is already running, it's logged first. The two icons switch modes, the choice is remembered in the browser, and a running timer always shows in timer mode.
+- **Start, end and duration, like Clockify.** Each box takes casual input (`9`, `915`, `115pm`, `1:15 PM`, `13:15`) and tidies it on blur. Change start or end and the duration follows; change the duration and the end moves. Either half is enough with a duration, or type a duration alone. [`TimeFields`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimeFields.java) is the one place that turns the three boxes into an entry; [`time-fields.js`](src/main/resources/static/js/time-fields.js) only previews it, and the server checks everything again. Clock times show on a 12-hour clock; 24-hour input works too.
+- **The edit row is the same bar:** description, project (an entry can move to another project), start - end, duration. The day stays fixed; to move an entry to another day, delete and re-add it.
 - **Project picker:** a searchable popover grouped under client headings ("CTG · 10 Projects"), with a colour dot per project and expandable tasks ("3 Tasks ⌄"). It works from the keyboard: Tab to it, type to search, arrows, Enter. Colours are derived from the project id, so there's nothing to manage.
 - **"Project" versus the spec's "project + task":** most of the time people log against a project, as in Clockify. Each such project has a hidden *default task*, so every entry still has both and reports stay uniform. In reports the default task is called `General`; on screen you just see the project. A project that needs real tasks simply adds them.
 - **Progressive enhancement:** the server renders a normal form with a plain `<select>`, and [`picker.js`](src/main/resources/static/js/picker.js) turns it into the popover. The select still holds the value, so submitting is unchanged and the page works without JavaScript. For 40 people the whole project list goes in the page, so there's no search API.

@@ -15,9 +15,9 @@ import jakarta.persistence.Version;
 import com.aryehgolob.timesheet.tracking.domain.TimeInput;
 
 /**
- * One block of time against a task on a day. Where and when it lands (user,
- * task, date) is fixed at creation; to move it, delete and re-add. That keeps
- * the edit rules about one date and one week.
+ * One block of time against a task on a day. Who and which day are fixed at
+ * creation (to move it to another day, delete and re-add), which keeps the edit
+ * rules about one date and one week. The task, time and note can change.
  */
 @Entity
 @Table(name = "time_entry")
@@ -59,10 +59,12 @@ class TimeEntry {
     }
 
     /** @return false if nothing actually changed (so nothing is written or audited) */
-    boolean change(TimeInput time, String note, Instant now) {
-        if (seconds == time.seconds() && Objects.equals(startTime, time.startTime()) && Objects.equals(this.note, note)) {
+    boolean change(long taskId, TimeInput time, String note, Instant now) {
+        if (this.taskId == taskId && seconds == time.seconds() && Objects.equals(startTime, time.startTime())
+                && Objects.equals(this.note, note)) {
             return false;
         }
+        this.taskId = taskId;
         this.seconds = time.seconds();
         this.startTime = time.startTime();
         this.note = note;
@@ -80,6 +82,10 @@ class TimeEntry {
 
     long getUserId() {
         return userId;
+    }
+
+    long getTaskId() {
+        return taskId;
     }
 
     LocalDate getWorkDate() {

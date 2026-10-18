@@ -238,10 +238,11 @@
             if (!wrap.contains(event.target)) close(false);
         });
 
-        // Adding needs a project; stopping a timer doesn't.
+        // The bar needs a project (data-picker-required); stopping a timer doesn't. In an
+        // edit row an untouched picker just means "keep the current project".
         form?.addEventListener('submit', (event) => {
             const action = event.submitter?.getAttribute('formaction') || '';
-            if (!select.value && !action.endsWith('/timer/stop')) {
+            if (select.dataset.pickerRequired && !select.value && !action.endsWith('/timer/stop')) {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 open();

@@ -53,16 +53,17 @@ public class WeekQueries {
             throw new NotFoundException("There's no such person.");
         }
         List<EntryLine> lines = jdbc.query("""
-                select e.id, %s as label, p.id as project_id, e.work_date, e.seconds, e.start_time, e.note, e.version
+                select e.id, e.task_id, %s as label, p.id as project_id,
+                       e.work_date, e.seconds, e.start_time, e.note, e.version
                 from time_entry e
                 join task t on t.id = e.task_id
                 join project p on p.id = t.project_id
                 where e.user_id = ? and e.work_date between ? and ?
                 order by e.work_date, e.start_time nulls last, e.id
                 """.formatted(Catalog.LABEL_SQL),
-                (rs, i) -> new EntryLine(rs.getLong(1), rs.getString(2), rs.getLong(3),
-                        rs.getObject(4, LocalDate.class), rs.getInt(5), rs.getObject(6, LocalTime.class),
-                        rs.getString(7), rs.getInt(8)),
+                (rs, i) -> new EntryLine(rs.getLong(1), rs.getLong(2), rs.getString(3), rs.getLong(4),
+                        rs.getObject(5, LocalDate.class), rs.getInt(6), rs.getObject(7, LocalTime.class),
+                        rs.getString(8), rs.getInt(9)),
                 ownerId, week.start(), week.end());
         var submittedAt = submissions.submittedAt(ownerId, week).orElse(null);
         PeriodLock lock = locks.current();

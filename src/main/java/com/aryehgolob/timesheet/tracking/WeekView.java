@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.aryehgolob.timesheet.catalog.ProjectColour;
 import com.aryehgolob.timesheet.period.PeriodLock;
+import com.aryehgolob.timesheet.tracking.domain.ClockTime;
 import com.aryehgolob.timesheet.tracking.domain.TimeInput;
 import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 
@@ -37,16 +38,29 @@ public record WeekView(
     public record TaskRow(String label, List<Integer> secondsPerDay, int total) {
     }
 
-    public record EntryLine(long id, String taskLabel, long projectId, LocalDate date, int seconds,
+    public record EntryLine(long id, long taskId, String taskLabel, long projectId, LocalDate date, int seconds,
             LocalTime startTime, String note, int version) {
 
-        /** "09:05-10:42" or "1:37:00", for display and to pre-fill the edit box. */
-        public String asTyped() {
-            return new TimeInput(seconds, startTime).asTyped();
+        /** "1:43 PM - 1:43 PM" for the list, as Clockify shows it; null without clock times. */
+        public String rangeLabel() {
+            if (startTime == null) {
+                return null;
+            }
+            int from = startTime.toSecondOfDay();
+            return ClockTime.formatShort(from) + " - " + ClockTime.formatShort(from + seconds);
         }
 
-        public boolean isRange() {
-            return startTime != null;
+        /** The edit row's start box: "1:43:43 PM", or empty for a plain duration. */
+        public String startText() {
+            return startTime == null ? "" : ClockTime.format(startTime.toSecondOfDay());
+        }
+
+        public String endText() {
+            return startTime == null ? "" : ClockTime.format(startTime.toSecondOfDay() + seconds);
+        }
+
+        public String durationText() {
+            return TimeInput.format(seconds);
         }
 
         public String colour() {

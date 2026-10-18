@@ -36,14 +36,14 @@ class WeekPageTest extends IntegrationTest {
         mvc.perform(post("/entries").with(user(sam)).with(csrf())
                         .param("taskId", String.valueOf(task))
                         .param("date", WEDNESDAY.toString())
-                        .param("time", "9:05-10:42")
+                        .param("start", "905").param("end", "10:42 am")
                         .param("note", "Kickoff"))
                 .andExpect(redirectedUrl("/?week=2026-10-12"));
 
         mvc.perform(get("/").param("week", "2026-10-12").with(user(sam)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("09:05-10:42")))
-                .andExpect(content().string(containsString("1:37")))
+                .andExpect(content().string(containsString("9:05 AM - 10:42 AM")))
+                .andExpect(content().string(containsString("1:37:00")))
                 .andExpect(content().string(containsString("Kickoff")));
     }
 
@@ -81,7 +81,7 @@ class WeekPageTest extends IntegrationTest {
         mvc.perform(post("/entries").with(user(sam)).with(csrf())
                         .param("taskId", String.valueOf(data.task()))
                         .param("date", WEDNESDAY.toString())
-                        .param("time", "1.00001"))
+                        .param("duration", "1.00001"))
                 .andExpect(redirectedUrl("/?week=2026-10-12"))
                 .andExpect(flash().attribute("error", containsString("Did you mean 1:00:00?")));
         assertThat(data.entryCount(sam.id())).isZero();
@@ -90,10 +90,67 @@ class WeekPageTest extends IntegrationTest {
     @Test
     void addingWithoutAProjectAsksForOneInsteadOfFailing() throws Exception {
         mvc.perform(post("/entries").with(user(data.user())).with(csrf())
-                        .param("date", WEDNESDAY.toString()).param("time", "1:00").param("note", "kept"))
+                        .param("date", WEDNESDAY.toString()).param("duration", "1:00").param("note", "kept"))
                 .andExpect(redirectedUrl("/?week=2026-10-12"))
                 .andExpect(flash().attribute("error", "Pick a project."))
-                .andExpect(flash().attribute("form", new EntryForm(null, WEDNESDAY, "1:00", "kept")));
+                .andExpect(flash().attribute("form", new EntryForm(null, WEDNESDAY, "", "", "1:00", "kept")));
+    }
+
+    @Test
+    void addWithStartAndDurationWorksOutTheEnd() throws Exception {
+        CurrentUser sam = data.user();
+
+        mvc.perform(post("/entries").with(user(sam)).with(csrf())
+                        .param("taskId", String.valueOf(data.task())).param("date", WEDNESDAY.toString())
+                        .param("start", "1:15pm").param("duration", "1:30"))
+                .andExpect(redirectedUrl("/?week=2026-10-12"));
+
+        mvc.perform(get("/").param("week", "2026-10-12").with(user(sam)))
+                .andExpect(content().string(containsString("1:15 PM - 2:45 PM")));
+    }
+
+    @Test
+    void addWithOnlyAStartTimeAsksForTheRestAndKeepsWhatWasTyped() throws Exception {
+        long task = data.task();
+
+        mvc.perform(post("/entries").with(user(data.user())).with(csrf())
+                        .param("taskId", String.valueOf(task)).param("date", WEDNESDAY.toString())
+                        .param("start", "9:00"))
+                .andExpect(flash().attribute("error", containsString("Add an end time or a duration")))
+                .andExpect(flash().attribute("form", new EntryForm(task, WEDNESDAY, "9:00", "", "", null)));
+    }
+
+    @Test
+    void editingMovesTheTimesAndCanChangeTheProject() throws Exception {
+        CurrentUser sam = data.user();
+        long first = data.task();
+        long second = data.projectTask("Vendor Management");
+        long id = timesheets.addEntry(sam.asActor(), first, WEDNESDAY, "1:43:43pm-1:43:49pm", "Test");
+
+        mvc.perform(post("/entries/{id}", id).with(user(sam)).with(csrf())
+                        .param("version", "0").param("week", "2026-10-12").param("taskId", String.valueOf(second))
+                        .param("start", "1:00 PM").param("end", "2:30 PM").param("duration", "0:00:06")
+                        .param("note", "Test"))
+                .andExpect(redirectedUrl("/?week=2026-10-12"));
+
+        var row = data.entry(id);
+        assertThat(row.get("seconds")).isEqualTo(5400);   // start and end win over a stale duration
+        assertThat(row.get("task_id")).isEqualTo(second);
+    }
+
+    @Test
+    void editingWithAnUntouchedProjectKeepsIt() throws Exception {
+        CurrentUser sam = data.user();
+        long task = data.task();
+        long id = timesheets.addEntry(sam.asActor(), task, WEDNESDAY, "1:00", null);
+
+        mvc.perform(post("/entries/{id}", id).with(user(sam)).with(csrf())
+                        .param("version", "0").param("week", "2026-10-12").param("taskId", "")
+                        .param("duration", "2:00"))
+                .andExpect(redirectedUrl("/?week=2026-10-12"));
+
+        assertThat(data.entry(id).get("task_id")).isEqualTo(task);
+        assertThat(data.entry(id).get("seconds")).isEqualTo(7200);
     }
 
     @Test
@@ -102,7 +159,7 @@ class WeekPageTest extends IntegrationTest {
 
         mvc.perform(post("/entries").with(user(sam)).with(csrf())
                         .param("taskId", String.valueOf(data.task())).param("note", "Client call")
-                        .param("date", WEDNESDAY.toString()).param("time", "  "))
+                        .param("date", WEDNESDAY.toString()).param("duration", "  "))
                 .andExpect(redirectedUrl("/"))
                 .andExpect(flash().attribute("notice", containsString("timer started")));
 
@@ -120,7 +177,7 @@ class WeekPageTest extends IntegrationTest {
         data.timerStartedAt(sam.id(), task, java.time.Instant.now().minusSeconds(45 * 60));
 
         mvc.perform(post("/entries").with(user(sam)).with(csrf())
-                        .param("taskId", String.valueOf(task)).param("time", ""))
+                        .param("taskId", String.valueOf(task)).param("duration", ""))
                 .andExpect(flash().attribute("notice", containsString("previous timer")));
 
         assertThat(data.entryCount(sam.id())).isEqualTo(1);
@@ -131,7 +188,7 @@ class WeekPageTest extends IntegrationTest {
     void addWithNoTimeStillNeedsAProject() throws Exception {
         CurrentUser sam = data.user();
 
-        mvc.perform(post("/entries").with(user(sam)).with(csrf()).param("time", ""))
+        mvc.perform(post("/entries").with(user(sam)).with(csrf()).param("duration", ""))
                 .andExpect(flash().attribute("error", "Pick a project."));
 
         assertThat(data.hasTimer(sam.id())).isFalse();
@@ -144,7 +201,7 @@ class WeekPageTest extends IntegrationTest {
 
         mvc.perform(post("/entries").with(user(sam)).with(csrf())
                         .param("taskId", String.valueOf(data.task()))
-                        .param("date", WEDNESDAY.toString()).param("time", "1:00"))
+                        .param("date", WEDNESDAY.toString()).param("duration", "1:00"))
                 .andExpect(redirectedUrl("/?week=2026-10-12"))
                 .andExpect(flash().attribute("error", containsString("submitted")));
     }
@@ -159,7 +216,7 @@ class WeekPageTest extends IntegrationTest {
                         .param("week", "2026-10-12"))
                 .andExpect(status().isForbidden());
         mvc.perform(post("/entries/{id}", samsEntry).with(user(jo)).with(csrf())
-                        .param("version", "0").param("time", "8:00").param("week", "2026-10-12"))
+                        .param("version", "0").param("duration", "8:00").param("week", "2026-10-12"))
                 .andExpect(status().isForbidden());
 
         assertThat(data.entry(samsEntry).get("seconds")).isEqualTo(3600);
@@ -211,6 +268,8 @@ class WeekPageTest extends IntegrationTest {
 
         mvc.perform(get("/").param("week", "2026-10-12").param("edit", String.valueOf(id)).with(user(sam)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("value=\"23:10-24:00\"")));
+                .andExpect(content().string(containsString("value=\"11:10 PM\"")))
+                .andExpect(content().string(containsString("value=\"12:00 AM\"")))
+                .andExpect(content().string(containsString("value=\"0:50:00\"")));
     }
 }

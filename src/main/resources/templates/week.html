@@ -70,24 +70,22 @@
         </span>
 
         <div class="eb-project">
-            <select id="qa-task" name="taskId" aria-label="Project" data-picker>
-                <option value="">Project</option>
-                <optgroup th:each="group : ${taskGroups}" th:label="${group.key}">
-                    <option th:each="t : ${group.value}" th:value="${t.id()}" th:text="${t.label()}"
-                            th:attr="data-project-id=${t.projectId()}, data-project=${t.projectName()},
-                                     data-task=${t.isDefault()} ? '' : ${t.taskName()},
-                                     data-colour=${t.colour()}"
-                            th:selected="${form.taskId() != null and form.taskId() == t.id()}">Strategic Planning</option>
-                </optgroup>
-            </select>
+            <select th:replace="~{fragments :: project-select('qa-task', ${form.taskId()}, true)}"></select>
         </div>
 
-        <input class="eb-time manual-only" name="time" placeholder="1:30 · 9:00-10:30 · empty = start now"
-               aria-label="Time (leave empty to start a timer now)" title="Leave empty to start a timer from now"
-               th:value="${form.time()}">
+        <!-- Clockify's three boxes; time-fields.js keeps them in step. All empty = start a timer now. -->
+        <span class="eb-times manual-only">
+            <input name="start" placeholder="Start" aria-label="Start time" title="e.g. 9, 915, 1:15 PM"
+                   th:value="${form.start()}">
+            <span class="dash" aria-hidden="true">-</span>
+            <input name="end" placeholder="End" aria-label="End time" title="e.g. 5pm, 1715"
+                   th:value="${form.end()}">
+        </span>
         <input class="eb-date manual-only" type="date" name="date" aria-label="Date" th:value="${form.date()}"
                th:min="${weekStart}" th:max="${view.week().end()}">
-        <button type="submit" class="primary eb-go manual-only">Add</button>
+        <input class="eb-duration manual-only" name="duration" placeholder="0:00:00" aria-label="Duration"
+               title="e.g. 1:30, 90m, 45s. Leave all times empty to start a timer now." th:value="${form.duration()}">
+        <button type="submit" class="primary eb-go manual-only" data-when-empty="Start" data-when-filled="Add">Add</button>
 
         <strong id="bar-clock" class="eb-clock timer-only"
                 th:attr="data-started=${timer != null} ? ${timer.startedAt().toEpochMilli()} : null">00:00:00</strong>
@@ -154,11 +152,12 @@
             <ul class="entries" th:unless="${lines.isEmpty()}">
                 <li th:each="e : ${lines}">
                     <th:block th:if="${editId == null or editId != e.id() or !view.canEdit(d)}">
-                        <span class="range" th:text="${e.isRange()} ? ${e.asTyped()} : ''">09:05-10:42</span>
-                        <span class="duration" th:text="${@fmt.duration(e.seconds())}">1:37</span>
+                        <span class="note" th:classappend="${e.note() == null} ? 'muted'"
+                              th:text="${e.note() ?: '(no description)'}">Standup</span>
                         <span class="task"><span class="dot" th:style="'background:' + ${e.colour()}"></span>
                             <span th:text="${e.taskLabel()}">Strategic Planning</span></span>
-                        <span class="note" th:text="${e.note()}">Standup</span>
+                        <span class="range" th:text="${e.rangeLabel()}">1:43 PM - 1:43 PM</span>
+                        <span class="duration" th:text="${@fmt.duration(e.seconds())}">0:00:06</span>
                         <span class="actions" th:if="${view.canEdit(d)}">
                             <a th:href="@{/(week=${weekStart}, edit=${e.id()})}">Edit</a>
                             <form th:action="@{/entries/{id}/delete(id=${e.id()})}" method="post"
@@ -168,15 +167,28 @@
                             </form>
                         </span>
                     </th:block>
+                    <!-- The edit row mirrors the entry bar: description, project, start - end, duration. -->
                     <form th:if="${editId != null and editId == e.id() and view.canEdit(d)}" class="edit-entry"
-                          th:action="@{/entries/{id}(id=${e.id()})}" method="post">
+                          th:action="@{/entries/{id}(id=${e.id()})}" method="post" autocomplete="off"
+                          th:with="f=${editForm}">
                         <input type="hidden" name="version" th:value="${e.version()}">
                         <input type="hidden" name="week" th:value="${weekStart}">
-                        <span class="task" th:text="${e.taskLabel()}">ACME · Dev</span>
-                        <input name="time" required autofocus autocomplete="off" aria-label="Time"
-                               th:value="${editTime != null} ? ${editTime} : ${e.asTyped()}">
-                        <input name="note" maxlength="500" autocomplete="off" aria-label="Note" class="grow"
-                               th:value="${editTime != null} ? ${editNote} : ${e.note()}">
+                        <input name="note" maxlength="500" aria-label="What have you worked on?" class="grow"
+                               placeholder="What have you worked on?" autofocus
+                               th:value="${f != null} ? ${f.note()} : ${e.note()}">
+                        <div class="eb-project">
+                            <select th:replace="~{fragments :: project-select('edit-task',
+                                    ${f != null and f.taskId() != null} ? ${f.taskId()} : ${e.taskId()}, false)}"></select>
+                        </div>
+                        <span class="eb-times">
+                            <input name="start" placeholder="Start" aria-label="Start time"
+                                   th:value="${f != null} ? ${f.start()} : ${e.startText()}">
+                            <span class="dash" aria-hidden="true">-</span>
+                            <input name="end" placeholder="End" aria-label="End time"
+                                   th:value="${f != null} ? ${f.end()} : ${e.endText()}">
+                        </span>
+                        <input class="eb-duration" name="duration" placeholder="0:00:00" aria-label="Duration"
+                               th:value="${f != null} ? ${f.duration()} : ${e.durationText()}">
                         <button type="submit" class="primary">Save</button>
                         <a id="cancel-edit" th:href="@{/(week=${weekStart})}">Cancel</a>
                         <p th:if="${editError}" class="alert error full" role="alert" th:text="${editError}">Error</p>

@@ -52,6 +52,9 @@ class TimeInputTest {
             0:00-0:01         | 00:00    | 60
             9:05:30-9:06      | 09:05:30 | 30
             9:00:00-9:00:45   | 09:00    | 45
+            1:15pm-2:45pm     | 13:15    | 5400
+            915-1030          | 09:15    | 4500
+            11pm-12am         | 23:00    | 3600
             """)
     void readsClockRanges(String typed, LocalTime start, int seconds) {
         TimeInput input = TimeInput.parse(typed);
@@ -112,21 +115,6 @@ class TimeInputTest {
     @CsvSource({"1, 0:00:01", "47, 0:00:47", "4020, 1:07:00", "36000, 10:00:00", "86400, 24:00:00"})
     void formatsAsHoursMinutesSeconds(int seconds, String shown) {
         assertThat(TimeInput.format(seconds)).isEqualTo(shown);
-    }
-
-    @ParameterizedTest(name = "\"{0}\" shows as \"{1}\" and reads back the same")
-    @CsvSource(delimiter = '|', textBlock = """
-            9:05-10:42      | 09:05-10:42
-            9:05:30-10:42   | 09:05:30-10:42
-            23:10-24:00     | 23:10-24:00
-            1:37            | 1:37:00
-            45s             | 0:00:45
-            """)
-    void asTypedRoundTrips(String typed, String shown) {
-        TimeInput input = TimeInput.parse(typed);
-
-        assertThat(input.asTyped()).isEqualTo(shown);
-        assertThat(TimeInput.parse(input.asTyped())).isEqualTo(input);
     }
 
     @Test

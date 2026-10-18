@@ -67,18 +67,30 @@ public class TimesheetService {
      *                        another tab) changed it since, refuse rather than overwrite
      */
     public void updateEntry(Actor actor, long entryId, int expectedVersion, String timeText, String noteText) {
+        updateEntry(actor, entryId, expectedVersion, null, TimeInput.parse(timeText), noteText);
+    }
+
+    /**
+     * @param taskId the project/task to move the entry to, or null to keep it.
+     *               The day stays fixed, so the edit rules are about one date.
+     */
+    public void updateEntry(Actor actor, long entryId, int expectedVersion, Long taskId, TimeInput time,
+            String noteText) {
         TimeEntry entry = load(entryId);
         checkCanChange(actor, entry.getUserId(), entry.getWorkDate());
         if (entry.getVersion() != expectedVersion) {
             throw new StaleEntryException();
         }
-        TimeInput time = TimeInput.parse(timeText);
+        long task = taskId == null ? entry.getTaskId() : taskId;
+        if (task != entry.getTaskId()) {
+            requireOpenTask(task);
+        }
         String note = cleanNote(noteText);
         long otherSeconds = entries.secondsOn(entry.getUserId(), entry.getWorkDate()) - entry.getSeconds();
         DailyLimit.check(otherSeconds, time.seconds());
 
         TimeEntry.Snapshot before = entry.snapshot();
-        if (entry.change(time, note, now())) {
+        if (entry.change(task, time, note, now())) {
             audit.record(actor, AUDIT_TYPE, entryId, "UPDATE", before, entry.snapshot());
         }
     }

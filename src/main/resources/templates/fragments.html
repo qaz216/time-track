@@ -7,6 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <script th:src="@{/js/app.js}" defer></script>
     <script th:src="@{/js/picker.js}" defer></script>
+    <script th:src="@{/js/time-fields.js}" defer></script>
 </head>
 <body>
 <header th:fragment="header" class="topbar">
@@ -31,5 +32,21 @@
         <button type="submit" class="link">Sign out</button>
     </form>
 </header>
+
+<!--
+  The project <select> that picker.js turns into the searchable popover. Shared by
+  the entry bar and the edit row. Needs ${taskGroups} (client heading -> tasks).
+  required: whether picking nothing is an error (the bar) or means "keep it" (an edit).
+-->
+<select th:fragment="project-select(selectId, selectedTaskId, required)" th:id="${selectId}" name="taskId"
+        aria-label="Project" data-picker th:attr="data-picker-required=${required} ? 'true' : null">
+    <option value="">Project</option>
+    <optgroup th:each="group : ${taskGroups}" th:label="${group.key}">
+        <option th:each="t : ${group.value}" th:value="${t.id()}" th:text="${t.label()}"
+                th:attr="data-project-id=${t.projectId()}, data-project=${t.projectName()},
+                         data-task=${t.isDefault()} ? '' : ${t.taskName()}, data-colour=${t.colour()}"
+                th:selected="${selectedTaskId != null and selectedTaskId == t.id()}">Strategic Planning</option>
+    </optgroup>
+</select>
 </body>
 </html>

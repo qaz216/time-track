@@ -1,6 +1,7 @@
 package com.aryehgolob.timesheet.tracking.web;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -18,6 +19,8 @@ import com.aryehgolob.timesheet.tracking.StaleEntryException;
 import com.aryehgolob.timesheet.tracking.TimerService;
 import com.aryehgolob.timesheet.tracking.TimesheetService;
 import com.aryehgolob.timesheet.tracking.domain.NotAllowedException;
+import com.aryehgolob.timesheet.tracking.domain.TimeFields;
+import com.aryehgolob.timesheet.tracking.domain.TimeInput;
 import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 
 /**
@@ -42,20 +45,32 @@ class EntryController {
      * with a message, not a 400. A day that turns out to be locked or submitted
      * (the date box allows any day of the week) is a message too.
      *
-     * <p>Add with the time left empty means "I'm starting this now": it starts a
-     * timer from the current time, like pressing Start.
+     * <p>Times come as Clockify's three boxes, start, end and duration, resolved by
+     * {@link TimeFields}. Leaving all three empty means "I'm starting this now":
+     * it starts a timer from the current time, like pressing Start.
      */
     @PostMapping
     String add(@AuthenticationPrincipal CurrentUser user,
             @RequestParam(required = false) Long taskId,
             @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date,
-            @RequestParam(defaultValue = "") String time,
+            @RequestParam(defaultValue = "") String start,
+            @RequestParam(defaultValue = "") String end,
+            @RequestParam(defaultValue = "") String duration,
             @RequestParam(required = false) String note,
             @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate week,
             RedirectAttributes redirect) {
         LocalDate day = date != null ? date : (week != null ? week : LocalDate.now());
+        EntryForm typed = new EntryForm(taskId, date, start, end, duration, note);
         String problem = taskId == null ? "Pick a project." : null;
-        if (problem == null && time.isBlank()) {
+        Optional<TimeInput> time = Optional.empty();
+        if (problem == null) {
+            try {
+                time = TimeFields.resolve(start, end, duration);
+            } catch (InvalidInputException e) {
+                problem = e.getMessage();
+            }
+        }
+        if (problem == null && time.isEmpty()) {
             try {
                 boolean switching = timers.running(user.asActor()).isPresent();
                 timers.start(user.asActor(), taskId, note);
@@ -72,30 +87,40 @@ class EntryController {
         }
         if (problem == null) {
             try {
-                timesheets.addEntry(user.asActor(), taskId, date, time, note);
+                timesheets.addEntry(user.asActor(), taskId, date, time.get(), note);
                 // keep the project and day, clear the rest: the next entry is a few keystrokes away
-                redirect.addFlashAttribute("form", new EntryForm(taskId, date, "", ""));
+                redirect.addFlashAttribute("form", EntryForm.next(taskId, date));
                 return toWeek(day, null);
             } catch (InvalidInputException | NotAllowedException e) {
                 problem = e.getMessage();
             }
         }
         redirect.addFlashAttribute("error", problem);
-        redirect.addFlashAttribute("form", new EntryForm(taskId, date, time, note));
+        redirect.addFlashAttribute("form", typed);
         return toWeek(day, null);
     }
 
-    /** @param week only used to send the user back where they were */
+    /**
+     * The edit row: same three time boxes, plus the project.
+     *
+     * @param taskId the project to move the entry to; empty keeps the current one
+     * @param week   only used to send the user back where they were
+     */
     @PostMapping("/{id}")
     String update(@AuthenticationPrincipal CurrentUser user,
             @PathVariable long id,
             @RequestParam int version,
-            @RequestParam String time,
+            @RequestParam(required = false) Long taskId,
+            @RequestParam(defaultValue = "") String start,
+            @RequestParam(defaultValue = "") String end,
+            @RequestParam(defaultValue = "") String duration,
             @RequestParam(required = false) String note,
             @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate week,
             RedirectAttributes redirect) {
         try {
-            timesheets.updateEntry(user.asActor(), id, version, time, note);
+            TimeInput time = TimeFields.resolve(start, end, duration)
+                    .orElseThrow(() -> new InvalidInputException("Enter a start and end, or a duration."));
+            timesheets.updateEntry(user.asActor(), id, version, taskId, time, note);
             return toWeek(week, null);
         } catch (StaleEntryException e) {
             // show the latest saved values, not what was typed over an old version
@@ -103,8 +128,7 @@ class EntryController {
             return toWeek(week, id);
         } catch (InvalidInputException e) {
             redirect.addFlashAttribute("editError", e.getMessage());
-            redirect.addFlashAttribute("editTime", time);
-            redirect.addFlashAttribute("editNote", note);
+            redirect.addFlashAttribute("editForm", new EntryForm(taskId, null, start, end, duration, note));
             return toWeek(week, id);
         }
     }

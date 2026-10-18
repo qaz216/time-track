@@ -15,7 +15,7 @@ import com.aryehgolob.timesheet.shared.InvalidInputException;
  *   1:07, 1:07:00       1 h 7 min      (h:mm or h:mm:ss)
  *   67m, 1h 7m, 45s     as written     (any of h, m, s)
  *   1.5, 1.5h           1 h 30 min     (decimal hours must land on a whole second)
- *   9:05-10:42          1 h 37 min from 09:05   (clock range, seconds optional,
+ *   9:05-10:42          1 h 37 min from 09:05   (clock range, read like start/end boxes,
  *                                               may end at 24:00, never crosses midnight)
  * </pre>
  *
@@ -26,8 +26,6 @@ public record TimeInput(int seconds, LocalTime startTime) {
 
     public static final int SECONDS_PER_DAY = 24 * 60 * 60;
 
-    private static final String CLOCK_TIME = "(\\d{1,2})(?::(\\d{2}))?(?::(\\d{2}))?";
-    private static final Pattern RANGE = Pattern.compile(CLOCK_TIME + "\\s*-\\s*" + CLOCK_TIME);
     private static final Pattern CLOCK = Pattern.compile("(\\d{1,2}):(\\d{2})(?::(\\d{2}))?");
     private static final Pattern UNITS = Pattern.compile(
             "(?:(\\d+(?:\\.\\d+)?)\\s*h)?\\s*(?:(\\d+)\\s*m)?\\s*(?:(\\d+)\\s*s)?");
@@ -57,9 +55,14 @@ public record TimeInput(int seconds, LocalTime startTime) {
         }
 
         Matcher m;
-        if ((m = RANGE.matcher(text)).matches()) {
-            int from = secondOfDay(m.group(1), m.group(2), m.group(3));
-            int to = secondOfDay(m.group(4), m.group(5), m.group(6));
+        int dash = text.indexOf('-');
+        if (dash > 0) {
+            // a clock range; each side is read like a start or end box ("915-1030", "1:15pm-2:45pm")
+            int from = ClockTime.parse(text.substring(0, dash));
+            int to = ClockTime.parse(text.substring(dash + 1));
+            if (to == 0 && from > 0) {
+                to = ClockTime.END_OF_DAY;   // "11pm-12am" ends at midnight
+            }
             if (to <= from) {
                 throw new InvalidInputException("The end time must be after the start time. Ranges can't cross midnight.");
             }
@@ -93,28 +96,9 @@ public record TimeInput(int seconds, LocalTime startTime) {
         return startTime == null ? null : startTime.plusSeconds(seconds);
     }
 
-    /**
-     * Back to what a user would type: "09:05-10:42" for a range (with seconds
-     * only when there are any), "1:37:00" otherwise. Parses to itself.
-     */
-    public String asTyped() {
-        if (startTime == null) {
-            return format(seconds);
-        }
-        return clock(startTime.toSecondOfDay()) + "-" + clock(startTime.toSecondOfDay() + seconds);
-    }
-
     /** 4020 -> "1:07:00". The one display format used everywhere, like Clockify's. */
     public static String format(long seconds) {
         return String.format("%d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60);
-    }
-
-    /** A time of day: "09:05", or "09:05:30" when it has seconds; midnight at the end is "24:00". */
-    private static String clock(int secondOfDay) {
-        int h = secondOfDay / 3600;
-        int m = secondOfDay / 60 % 60;
-        int s = secondOfDay % 60;
-        return s == 0 ? String.format("%02d:%02d", h, m) : String.format("%02d:%02d:%02d", h, m, s);
     }
 
     private static int exactSeconds(BigDecimal hours, String asTyped) {
@@ -129,16 +113,5 @@ public record TimeInput(int seconds, LocalTime startTime) {
             throw new InvalidInputException(OUT_OF_RANGE);
         }
         return seconds.intValueExact();
-    }
-
-    private static int secondOfDay(String hours, String minutes, String seconds) {
-        int h = Integer.parseInt(hours);
-        int m = minutes == null ? 0 : Integer.parseInt(minutes);
-        int s = seconds == null ? 0 : Integer.parseInt(seconds);
-        if (h > 24 || m > 59 || s > 59 || (h == 24 && (m > 0 || s > 0))) {
-            String typed = hours + (minutes == null ? "" : ":" + minutes) + (seconds == null ? "" : ":" + seconds);
-            throw new InvalidInputException("\"" + typed + "\" isn't a time of day.");
-        }
-        return h * 3600 + m * 60 + s;
     }
 }
