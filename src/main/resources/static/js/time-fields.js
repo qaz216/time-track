@@ -100,6 +100,7 @@
             if (e === null) return;
             end.value = formatClock(e);
             if (s !== null && e > s) duration.value = formatDuration(e - s);
+            else if (s !== null && e === s) duration.value = '';
             else if (s === null && d !== null && e - d >= 0) start.value = formatClock(e - d);
         });
         duration.addEventListener('change', () => {
@@ -110,16 +111,46 @@
             else if (s === null && e !== null && e - d >= 0) start.value = formatClock(e - d);
         });
 
-        // "All times empty" starts a timer, so say so on the button.
-        if (button) {
-            const relabel = () => {
-                const empty = !start.value.trim() && !end.value.trim() && !duration.value.trim();
-                button.textContent = empty ? button.dataset.whenEmpty : button.dataset.whenFilled;
+        // Clockify-style editing: on focus a time shows compactly and selected ("221PM"),
+        // so typing replaces it; on blur it tidies back ("2:21 PM").
+        [start, end].forEach((input) => {
+            input.addEventListener('focus', () => {
+                const s = parseClock(input.value);
+                if (s !== null) input.value = formatClock(s).replace(/[\s:]/g, '');
+                input.select();
+            });
+            input.addEventListener('blur', () => {
+                const s = parseClock(input.value);
+                if (s !== null) input.value = formatClock(s);
+            });
+        });
+
+        // "No time given" (start = end, no duration) starts a timer, so say so on the button.
+        const noTimeGiven = () => {
+            const {s, e, d} = read();
+            return (s === e || (!start.value.trim() && !end.value.trim())) && !d;
+        };
+        const relabel = () => {
+            if (button) button.textContent = noTimeGiven() ? button.dataset.whenEmpty : button.dataset.whenFilled;
+        };
+        [start, end, duration].forEach((input) => input.addEventListener('input', relabel));
+        form.addEventListener('change', relabel);
+
+        // The entry bar opens on the current time, start = end, like Clockify, and keeps
+        // up with the clock until you touch either box. (Edit rows keep the entry's times.)
+        if (form.id === 'quick-add' && !start.value.trim() && !end.value.trim()) {
+            let touched = false;
+            [start, end].forEach((input) => input.addEventListener('input', () => { touched = true; }));
+            const toNow = () => {
+                if (touched || [start, end].includes(document.activeElement)) return;
+                const now = new Date();
+                start.value = end.value = formatClock(now.getHours() * 3600 + now.getMinutes() * 60);
+                relabel();
             };
-            [start, end, duration].forEach((input) => input.addEventListener('input', relabel));
-            form.addEventListener('change', relabel);
-            relabel();
+            toNow();
+            setInterval(toNow, 15000);
         }
+        relabel();
     }
 
     document.querySelectorAll('#quick-add, form.edit-entry').forEach(wire);

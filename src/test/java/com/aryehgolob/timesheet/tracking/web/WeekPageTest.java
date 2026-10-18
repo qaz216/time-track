@@ -171,6 +171,19 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void addWithTheUntouchedDefaultTimesStartsATimerToo() throws Exception {
+        CurrentUser sam = data.user();
+
+        mvc.perform(post("/entries").with(user(sam)).with(csrf())
+                        .param("taskId", String.valueOf(data.task())).param("date", WEDNESDAY.toString())
+                        .param("start", "2:21 PM").param("end", "2:21 PM").param("duration", ""))
+                .andExpect(flash().attribute("notice", containsString("timer started")));
+
+        assertThat(data.hasTimer(sam.id())).isTrue();
+        assertThat(data.entryCount(sam.id())).isZero();
+    }
+
+    @Test
     void addWithNoTimeWhileATimerRunsLogsTheOldOneAndStartsAgain() throws Exception {
         CurrentUser sam = data.user();
         long task = data.task();

@@ -13,7 +13,8 @@ import com.aryehgolob.timesheet.shared.InvalidInputException;
  *   <li>start + end: the range between them (an end of 12:00 AM means midnight)</li>
  *   <li>start + duration, or end + duration: the range they imply</li>
  *   <li>duration alone: just a duration (it also accepts "9:00-10:30")</li>
- *   <li>nothing at all: empty, and the caller decides (the bar starts a timer)</li>
+ *   <li>nothing at all, or start = end with no duration (the bar's untouched
+ *       defaults): empty, and the caller decides (the bar starts a timer)</li>
  * </ul>
  *
  * When all three are filled, start and end win: the page keeps duration in step anyway.
@@ -26,10 +27,18 @@ public final class TimeFields {
     public static Optional<TimeInput> resolve(String start, String end, String duration) {
         Integer from = blank(start) ? null : ClockTime.parse(start);
         Integer to = blank(end) ? null : ClockTime.parse(end);
-        TimeInput length = blank(duration) ? null : TimeInput.parse(duration);
+        TimeInput length = blank(duration) || isZero(duration) ? null : TimeInput.parse(duration);
 
         if (from != null && from == ClockTime.END_OF_DAY) {
             throw new InvalidInputException("An entry can't start at the end of the day.");
+        }
+        // The bar opens with start = end = now, as Clockify does. Left like that, no
+        // time was given (the bar starts a timer); with a duration, the start is what counts.
+        if (from != null && from.equals(to)) {
+            if (length == null) {
+                return Optional.empty();
+            }
+            to = null;
         }
         if (to != null && to == 0 && from != null && from > 0) {
             to = ClockTime.END_OF_DAY;   // 12:00 AM as an end is the coming midnight
@@ -66,5 +75,10 @@ public final class TimeFields {
 
     private static boolean blank(String text) {
         return text == null || text.isBlank();
+    }
+
+    /** "0:00:00", "0" and friends: the empty duration box's own value, not a duration. */
+    private static boolean isZero(String text) {
+        return text.strip().matches("[0:.]+");
     }
 }

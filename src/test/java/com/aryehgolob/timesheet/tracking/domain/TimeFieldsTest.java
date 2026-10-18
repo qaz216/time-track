@@ -44,10 +44,23 @@ class TimeFieldsTest {
         assertThat(TimeFields.resolve(null, "", "  ")).isEmpty();
     }
 
+    @Test
+    void theUntouchedDefaultsStartEqualsEndCountAsNoTime() {
+        assertThat(TimeFields.resolve("2:21 PM", "2:21 PM", "")).isEmpty();
+        assertThat(TimeFields.resolve("2:21 PM", "2:21 PM", "0:00:00")).isEmpty();
+    }
+
+    @Test
+    void aDurationWithTheDefaultStartRunsFromTheStart() {
+        TimeInput time = TimeFields.resolve("2:21 PM", "2:21 PM", "1:30").orElseThrow();
+
+        assertThat(time.startTime()).isEqualTo(LocalTime.of(14, 21));
+        assertThat(time.seconds()).isEqualTo(5400);
+    }
+
     @ParameterizedTest(name = "start \"{0}\", end \"{1}\", duration \"{2}\" -> \"{3}\"")
     @CsvSource(delimiter = '|', nullValues = "-", textBlock = """
             10:30 | 9:00  | -    | end must be after the start
-            9:00  | 9:00  | -    | end must be after the start
             9:00  | -     | -    | Add an end time or a duration
             -     | 10:30 | -    | Add an end time or a duration
             -     | 1:00  | 2:00 | start before midnight
