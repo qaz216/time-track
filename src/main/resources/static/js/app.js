@@ -68,3 +68,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 })();
+
+// Entry bar: timer / manual switch, remembered in this browser (a convenience,
+// so localStorage is fine). While a timer runs, the bar always opens in timer mode.
+(() => {
+    const bar = document.getElementById('quick-add');
+    if (!bar) {
+        return;
+    }
+    const modes = bar.querySelector('.eb-modes');
+    const setMode = (mode, remember) => {
+        bar.dataset.mode = mode;
+        modes.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+        if (remember) {
+            try { localStorage.setItem('entryMode', mode); } catch { /* private window: just don't remember */ }
+        }
+    };
+    let saved = null;
+    try { saved = localStorage.getItem('entryMode'); } catch { /* ignore */ }
+    modes.hidden = false;
+    setMode(bar.dataset.running === 'true' || saved === 'timer' ? 'timer' : 'manual', false);
+    modes.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-mode]');
+        if (button) {
+            setMode(button.dataset.mode, true);
+            document.getElementById('qa-desc')?.focus();
+        }
+    });
+
+    const clock = document.getElementById('bar-clock');
+    if (clock?.dataset.started) {
+        const started = Number(clock.dataset.started);
+        const tick = () => {
+            const s = Math.max(0, Math.floor((Date.now() - started) / 1000));
+            clock.textContent = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60]
+                .map((n) => String(n).padStart(2, '0')).join(':');
+        };
+        tick();
+        setInterval(tick, 1000);
+    }
+})();
