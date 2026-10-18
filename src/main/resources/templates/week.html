@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('My week')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="page">
+    <h1>My week</h1>
+    <p class="muted">Signed in as <span th:text="${user.displayName}">Name</span>.</p>
+</main>
+</body>
+</html>

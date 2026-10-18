@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' · Timesheet'">Timesheet</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header th:fragment="header" class="topbar">
+    <a class="brand" th:href="@{/}">Timesheet</a>
+    <nav>
+        <a th:href="@{/}">My week</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/weeks}">Team weeks</a>
+    </nav>
+    <form class="signout" th:action="@{/logout}" method="post">
+        <span class="muted" sec:authentication="principal.displayName">Name</span>
+        <button type="submit" class="link">Sign out</button>
+    </form>
+</header>
+</body>
+</html>

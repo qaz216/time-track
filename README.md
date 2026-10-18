@@ -1,2 +1,27 @@
-# ready-cnd-aryehgolob
-CTG Ready · Software Engineer · Build a timesheet app you would use 
+# Timesheet
+
+A small timesheet app for a 40-person consultancy that bills by the hour.
+
+## Run it
+
+```bash
+docker compose up --build
+```
+
+Then open http://localhost:8080 and sign in with a demo account (password `demo1234`):
+
+| Email | Role |
+|---|---|
+| `admin@example.com` | Admin |
+| `sam@example.com` | User |
+| `jo@example.com` | User |
+
+Run the tests (needs Docker running, for Testcontainers):
+
+```bash
+./mvnw verify
+```
+
+## Decisions
+
+_Work in progress. This section walks through what I built, what I cut and why._

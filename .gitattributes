@@ -1,0 +1,5 @@
+# Same checkout must work from PowerShell (mvnw.cmd) and WSL/macOS/Linux (./mvnw).
+* text=auto
+/mvnw text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf

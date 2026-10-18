@@ -1,0 +1,3 @@
+# Local/demo profile: seeds demo users and projects on an empty database.
+timesheet:
+  seed-demo-data: true

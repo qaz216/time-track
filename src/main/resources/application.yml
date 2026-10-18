@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: timesheet
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/timesheet}
+    username: ${DB_USER:timesheet}
+    password: ${DB_PASSWORD:timesheet}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # Flyway owns the schema; Hibernate only checks it
+  threads:
+    virtual:
+      enabled: true
+
+timesheet:
+  # One company, one office calendar. Used to decide what "today" is and where
+  # midnight falls when a timer is stopped.
+  zone: ${TIMESHEET_ZONE:America/New_York}
