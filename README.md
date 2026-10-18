@@ -12,11 +12,11 @@ Then open http://localhost:8080 (port taken? `APP_PORT=8090 docker compose up --
 
 | Username | Password | Role |
 |---|---|---|
-| `demo` | `demo` | Admin, with its own time logged, so one sign-in shows everything |
+| `demo` | `demo` | Admin, so one sign-in reaches everything |
 | `sam` | `demo` | User |
 | `jo` | `demo` | User |
 
-The demo data includes three weeks of time for all three, with one of Jo's weeks left unsubmitted, so the admin view has something to show. To start fresh: `docker compose down -v`.
+The demo setup only creates these accounts and the ten CTG projects; every timesheet starts empty. To start fresh: `docker compose down -v`.
 
 Or run it with Maven alone (JDK 21 and Docker running; no Compose, no Postgres to install):
 
@@ -37,7 +37,7 @@ Run the tests (needs Docker running, for Testcontainers):
 1. **Sign in as `demo` / `demo`.** The cursor is in "What have you worked on?". Type anything, Tab to **Project**, type `fin`, Enter, Tab, `905`, Tab, `1042` (they tidy to 9:05 AM and 10:42 AM, and the duration fills in), Enter. Add another with `1.5`: the project and day are kept. Durations show as h:mm:ss, like Clockify.
 2. Click the clock icon at the right of the bar to switch to timer mode, then START (or press `t`). It ticks in the bar and in the header on every page; STOP or `t` logs it.
 3. Click **Submit week**. The week goes read-only; **Reopen** brings it back.
-4. Open **Team weeks** (demo is an admin): everyone × every week, ✓ for submitted, with Jo's missing week easy to spot. Click a cell to see that week, then **Export CSV**.
+4. Open **Team weeks** (demo is an admin): everyone × every week, with your time and a ✓ once a week is submitted. Sam and Jo show as missing, which is exactly what this page is for. Click a cell to see that week, then **Export CSV**.
 5. Open **Close period** and lock through last month. Now nobody, admins included, can change those days.
 
 ## Scope
