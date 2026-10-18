@@ -69,7 +69,7 @@ Run the tests (needs Docker running, for Testcontainers):
 
 ## Data model
 
-Eight tables, all in one readable migration: [`V1__schema.sql`](src/main/resources/db/migration/V1__schema.sql).
+Eight tables in two readable migrations: [`V1__schema.sql`](src/main/resources/db/migration/V1__schema.sql) and [`V2__default_tasks.sql`](src/main/resources/db/migration/V2__default_tasks.sql).
 
 | Table | Holds | Notes |
 |---|---|---|
