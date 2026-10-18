@@ -23,7 +23,7 @@ Open **http://localhost:8080** and sign in.
       <br><br>
       The demo account is an admin, so it reaches everything: your own week, the team's weeks, period locks and the CSV export.
       <br><br>
-      Sample users <code>sam</code> and <code>jo</code> (password <code>demo</code>) come with a few weeks of logged time.
+      Every sample user (<code>sam</code>, <code>jo</code>, <code>grace</code>, and 19 more, all with password <code>demo</code>) comes with four weeks of logged time.
     </td>
   </tr>
 </table>
@@ -107,3 +107,33 @@ The front page sums up your week. Here's what a real week looks like: Sam's samp
 - Each day you logged time gets a card with its total. The newest day comes first, and days with no time are left out.
 - Each entry shows its note, its *Project › Task* (with the project's colour), its start and end times, and its exact duration.
 - **Edit** opens the entry in place, where you can change the times, the note or the task. **Delete** removes it. Both are recorded in the audit trail.
+
+## Team weeks (admins)
+
+Admins get a **Team weeks** page: everyone's hours, week by week, on one screen. It answers the Friday question, *"who hasn't submitted yet?"*, at a glance. The demo data fills it with a team of 22 people and four weeks of time, over 1,200 entries in all.
+
+![Team weeks: one row per person, one column per week, with green ticked totals for submitted weeks, plain totals for drafts, dashes where nothing was logged, and Total columns](docs/team-weeks.png)
+
+**Reading the grid**
+
+| You see | It means |
+|---|---|
+| <code>36:45:00 ✓</code> in green | The week is **submitted** |
+| <code>38:00:00</code> plain | The week is a **draft**: time is logged but not submitted yet |
+| <code>—</code> | **Nothing logged** that week (on leave, or someone to chase) |
+| <code>19/23 in</code> under a week | How many people have submitted that week |
+
+- **Click any cell** to open that person's week, exactly as they see it.
+- **Pick a range** with *From* / *To* and click **Show**. Ranges widen to whole weeks (Monday to Sunday).
+- The **Total** row and column give hours per week and per person.
+
+**Export CSV** downloads the same range with one row per person, week and task, ready for payroll or invoicing:
+
+```
+email,name,week_start,week_status,client,project_code,project,task,billable,seconds,hours
+sam@example.com,Sam Rivera,2026-10-05,submitted,,AMZ,Amazon,Development,yes,16200,4.50
+sam@example.com,Sam Rivera,2026-10-05,submitted,,AMZ,Amazon,Discovery,yes,10800,3.00
+grace@example.com,Grace Okafor,2026-09-28,draft,,AMZ,Amazon,Deployment,yes,46800,13.00
+```
+
+`seconds` is exact, and `week_status` is on every row, so draft hours can't slip into an invoice unnoticed.

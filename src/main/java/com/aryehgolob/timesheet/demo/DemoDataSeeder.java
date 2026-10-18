@@ -3,9 +3,13 @@ package com.aryehgolob.timesheet.demo;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +34,11 @@ import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 
 /**
  * Seeds an empty database (dev profile only) with the demo accounts, the CTG
- * and Amazon projects with their tasks, and four weeks of sample time for Sam
- * and Jo, shaped so the team view shows every state: submitted, draft, and
- * nothing logged. The demo user's own timesheet starts empty. Time goes
- * through the real services, so it's validated and audited like anything typed.
+ * and Amazon projects with their tasks, and four weeks of sample time: Sam
+ * and Jo by hand, the rest of the team generated. Sam and Jo are shaped so
+ * the team view shows every state: submitted, draft, and nothing logged. The
+ * demo user's own timesheet starts empty. Time goes through the real
+ * services, so it's validated and audited like anything typed.
  */
 @Component
 @ConditionalOnBooleanProperty("timesheet.seed-demo-data")
@@ -62,6 +67,31 @@ class DemoDataSeeder implements ApplicationRunner {
             "Development",
             "QA & Testing",
             "Deployment");
+
+    /** Everyone else on the team; usernames are the first names, lowercased. */
+    static final List<String> TEAM = List.of(
+            "Alex Morgan", "Priya Patel", "Marcus Johnson", "Elena Rossi", "David Kim",
+            "Fatima Hassan", "Liam O'Brien", "Sofia Garcia", "Noah Williams", "Aisha Bello",
+            "Ethan Brooks", "Mei Lin", "Daniel Cohen", "Grace Okafor", "Lucas Silva",
+            "Hannah Weiss", "Omar Haddad", "Chloe Martin", "Ravi Iyer", "Zoe Turner");
+
+    /** A few believable notes for each task, for the generated team time. */
+    private static final Map<String, List<String>> NOTES = Map.ofEntries(
+            Map.entry("Project Administration", List.of("Status reports", "Schedule updates", "Project kickoff prep")),
+            Map.entry("Financial Management", List.of("Month-end close", "Accounts reconciliation", "Cash flow report")),
+            Map.entry("Budget Planning & Tracking", List.of("Forecast model", "Budget variance review", "Q1 budget draft")),
+            Map.entry("Resource Management", List.of("Staffing plan", "Interview candidates", "Capacity review")),
+            Map.entry("Vendor Management", List.of("Vendor check-in call", "Review vendor quotes", "Supplier scorecard")),
+            Map.entry("Contract Administration", List.of("Redline MSA", "Renewal paperwork", "Contract review")),
+            Map.entry("Billing & Invoicing", List.of("Invoice run", "Prepare client invoices", "Chase overdue invoices")),
+            Map.entry("Operations Management", List.of("Standup", "Weekly ops sync", "Process improvements")),
+            Map.entry("Compliance & Reporting", List.of("Audit evidence", "SOX checklist", "Quarterly filing prep")),
+            Map.entry("Strategic Planning", List.of("Roadmap workshop", "Market research", "Planning offsite prep")),
+            Map.entry("Discovery", List.of("Requirements workshop", "Stakeholder interviews", "Current-state review")),
+            Map.entry("UX Design", List.of("Checkout wireframes", "Usability test notes", "Design review")),
+            Map.entry("Development", List.of("Checkout API integration", "Order service refactor", "Code review")),
+            Map.entry("QA & Testing", List.of("Regression test pass", "Test plan", "Bug triage")),
+            Map.entry("Deployment", List.of("Release prep", "Staging deploy", "Release notes")));
 
     /** One sample entry: a task, a time as a user would type it, and a description. */
     private record Slot(String task, String time, String note) {
@@ -148,8 +178,69 @@ class DemoDataSeeder implements ApplicationRunner {
         addProject("AMZ", "Amazon", AMAZON_TASKS, taskOf);
 
         seedSampleTime(new Actor(sam.getId(), false), new Actor(jo.getId(), false), taskOf);
-        log.info("Seeded demo accounts, the CTG and Amazon projects, and sample time for Sam and Jo. Sign in as demo / {}",
-                DEMO_PASSWORD);
+        seedTeam(hash, taskOf);
+        log.info("Seeded demo accounts, the CTG and Amazon projects, and sample time for {} people. Sign in as demo / {}",
+                TEAM.size() + 2, DEMO_PASSWORD);
+    }
+
+    /**
+     * The rest of the team, so Team weeks looks like a real firm: each person
+     * works mostly on a few tasks, logs a 6 to 8.5 hour day in a few entries,
+     * and usually submits on time. Now and then someone forgets to submit or
+     * takes a week off. A fixed seed per person (from the name) keeps the data
+     * the same on every fresh start.
+     */
+    private void seedTeam(String hash, Map<String, Long> taskOf) {
+        LocalDate today = LocalDate.now(clock);
+        WorkWeek[] weeks = sampleWeeks(today);
+        List<String> allTasks = new ArrayList<>(CTG_TASKS);
+        allTasks.addAll(AMAZON_TASKS);
+
+        for (int p = 0; p < TEAM.size(); p++) {
+            String name = TEAM.get(p);
+            String username = name.substring(0, name.indexOf(' ')).toLowerCase(Locale.ROOT);
+            AppUser user = users.save(new AppUser(username, username + "@example.com", name, hash, Role.USER));
+            Actor who = new Actor(user.getId(), false);
+            Random rnd = new Random(name.hashCode());   // not p: neighbouring seeds start out alike
+            List<String> usual = new ArrayList<>(allTasks);
+            Collections.shuffle(usual, rnd);
+            usual = usual.subList(0, 3 + rnd.nextInt(3));
+
+            for (int w = 0; w < weeks.length; w++) {
+                if (w < weeks.length - 1 && rnd.nextInt(12) == 0) {
+                    continue;   // a week off
+                }
+                boolean logged = false;
+                for (LocalDate day : weeks[w].days()) {
+                    if (!day.isBefore(today) || day.getDayOfWeek().getValue() > 5) {
+                        continue;
+                    }
+                    int left = 6 * 60 + rnd.nextInt(11) * 15;
+                    int pieces = 2 + rnd.nextInt(3);
+                    for (int i = 0; i < pieces && left > 0; i++) {
+                        int minutes = i == pieces - 1 ? left : Math.min(left, 30 + rnd.nextInt(10) * 15);
+                        String task = usual.get(rnd.nextInt(usual.size()));
+                        List<String> notes = NOTES.get(task);
+                        timesheets.addEntry(who, taskOf.get(task), day, "%d:%02d".formatted(minutes / 60, minutes % 60),
+                                notes.get(rnd.nextInt(notes.size())));
+                        left -= minutes;
+                    }
+                    logged = true;
+                }
+                // past weeks: most people have submitted, the odd one forgot; this week is still open
+                boolean submits = rnd.nextInt(10) < (w == weeks.length - 2 ? 7 : 9);
+                if (logged && w < weeks.length - 1 && submits) {
+                    submissions.submit(who, user.getId(), weeks[w]);
+                }
+            }
+        }
+    }
+
+    /** Three weeks back through this week. */
+    private static WorkWeek[] sampleWeeks(LocalDate today) {
+        WorkWeek thisWeek = WorkWeek.containing(today);
+        return new WorkWeek[] {thisWeek.previous().previous().previous(), thisWeek.previous().previous(),
+                thisWeek.previous(), thisWeek};
     }
 
     /**
@@ -164,9 +255,8 @@ class DemoDataSeeder implements ApplicationRunner {
      */
     private void seedSampleTime(Actor sam, Actor jo, Map<String, Long> taskOf) {
         LocalDate today = LocalDate.now(clock);
-        WorkWeek thisWeek = WorkWeek.containing(today);
-        WorkWeek[] weeks = {thisWeek.previous().previous().previous(), thisWeek.previous().previous(),
-                thisWeek.previous(), thisWeek};
+        WorkWeek[] weeks = sampleWeeks(today);
+        WorkWeek thisWeek = weeks[3];
 
         for (int w = 0; w < weeks.length; w++) {
             for (LocalDate day : weeks[w].days()) {
