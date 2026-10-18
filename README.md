@@ -92,6 +92,12 @@ Eight tables, built by three small migrations: [`V1__schema.sql`](src/main/resou
 
 `work_date` is a plain `date`, not a timestamp. The day you worked is a calendar fact, so there's no time-zone arithmetic on the main path. The one place that needs a zone (the timer and "today") uses the office zone from config.
 
+## How it flows
+
+![How the application flows: employee, server, admin and database lanes](docs/app-flow.png)
+
+Every change, typed or timed, goes through `TimesheetService`, is checked by `EditPolicy`, and is saved together with its audit row. The diagram is also available as an editable vector file: [`docs/app-flow.svg`](docs/app-flow.svg).
+
 ## The shape of the code
 
 A modular monolith, packaged by feature, not by layer:

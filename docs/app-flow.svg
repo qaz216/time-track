@@ -1,0 +1,212 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1000" viewBox="0 0 1800 1000"
+     font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#44546a"/>
+    </marker>
+    <style>
+      .lane-label { font-size: 15px; font-weight: 700; fill: #1f3864; }
+      .lane-sub   { font-size: 11px; fill: #44546a; }
+      .title      { font-size: 15px; font-weight: 600; fill: #1f2937; }
+      .sub        { font-size: 11.5px; fill: #44546a; }
+      .tag        { font-size: 11px; font-style: italic; fill: #5b6b80; }
+      .act   { fill: #dbe8f7; stroke: #2f5597; stroke-width: 1.4; }
+      .srv   { fill: #eef3fb; stroke: #2f5597; stroke-width: 1.4; stroke-dasharray: 0; }
+      .start { fill: #e2f0d9; stroke: #548235; stroke-width: 1.4; }
+      .dec   { fill: #fff2cc; stroke: #bf9000; stroke-width: 1.4; }
+      .bad   { fill: #fbe0e0; stroke: #c00000; stroke-width: 1.4; }
+      .db    { fill: #e2f0d9; stroke: #548235; stroke-width: 1.4; }
+      .db-ref{ fill: #f2f2f2; stroke: #8c8c8c; stroke-width: 1.2; }
+      .flow  { fill: none; stroke: #44546a; stroke-width: 1.5; marker-end: url(#arrow); }
+      .back  { fill: none; stroke: #44546a; stroke-width: 1.5; stroke-dasharray: 6 4; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1800" height="1000" fill="#ffffff"/>
+
+  <!-- title and legend -->
+  <text x="20" y="27" font-size="19" font-weight="700" fill="#1f3864">Timesheet: how the application flows</text>
+  <g transform="translate(1010,12)" font-size="12" fill="#1f2937">
+    <rect x="0" y="2" width="26" height="16" rx="3" class="act"/><text x="32" y="15">Screen / user action</text>
+    <rect x="170" y="2" width="26" height="16" rx="3" class="srv"/><text x="202" y="15">Server step</text>
+    <polygon points="303,10 316,2 329,10 316,18" class="dec"/><text x="335" y="15">Decision</text>
+    <rect x="410" y="2" width="26" height="16" rx="3" class="bad"/><text x="442" y="15">Refused</text>
+    <path d="M512,5 a13,3 0 0,0 26,0 a13,3 0 0,0 -26,0 v10 a13,3 0 0,0 26,0 v-10" class="db"/><text x="544" y="15">Database table</text>
+  </g>
+
+  <!-- swimlanes -->
+  <rect x="10" y="40"  width="1780" height="260" fill="#f6f9fd" stroke="#a6b8cf"/>
+  <rect x="10" y="300" width="1780" height="320" fill="#ffffff" stroke="#a6b8cf"/>
+  <rect x="10" y="620" width="1780" height="180" fill="#f6f9fd" stroke="#a6b8cf"/>
+  <rect x="10" y="800" width="1780" height="180" fill="#ffffff" stroke="#a6b8cf"/>
+  <rect x="10" y="40"  width="100" height="260" fill="#dde6f1" stroke="#a6b8cf"/>
+  <rect x="10" y="300" width="100" height="320" fill="#dde6f1" stroke="#a6b8cf"/>
+  <rect x="10" y="620" width="100" height="180" fill="#dde6f1" stroke="#a6b8cf"/>
+  <rect x="10" y="800" width="100" height="180" fill="#dde6f1" stroke="#a6b8cf"/>
+  <text x="60" y="166" text-anchor="middle" class="lane-label">Employee</text>
+  <text x="60" y="184" text-anchor="middle" class="lane-sub">browser</text>
+  <text x="60" y="456" text-anchor="middle" class="lane-label">Server</text>
+  <text x="60" y="474" text-anchor="middle" class="lane-sub">Spring Boot</text>
+  <text x="60" y="706" text-anchor="middle" class="lane-label">Admin</text>
+  <text x="60" y="724" text-anchor="middle" class="lane-sub">browser</text>
+  <text x="60" y="886" text-anchor="middle" class="lane-label">Database</text>
+  <text x="60" y="904" text-anchor="middle" class="lane-sub">PostgreSQL</text>
+
+  <!-- ===== connectors (drawn first so boxes sit on top) ===== -->
+  <!-- employee lane -->
+  <path class="flow" d="M270,170 H308"/>
+  <path class="flow" d="M450,170 H473 V120 H493"/>
+  <path class="flow" d="M635,120 H683"/>
+  <text x="648" y="112" class="tag">yes</text>
+  <path class="flow" d="M565,165 V216"/>
+  <text x="573" y="196" class="tag">no: start a timer</text>
+  <path class="flow" d="M1045,160 H1075 V110 H1108"/>
+  <path class="flow" d="M1045,180 H1075 V240 H1108"/>
+
+  <!-- employee to server -->
+  <path class="flow" d="M760,147 V341"/>
+  <path class="flow" d="M565,272 V341"/>
+  <path class="flow" d="M1180,267 V288 H1010 V341"/>
+  <path class="flow" d="M1250,110 H1650 V335"/>
+  <text x="1440" y="102" class="tag">submit or reopen</text>
+
+  <!-- server lane -->
+  <path class="flow" d="M845,370 H883"/>
+  <path class="flow" d="M565,397 V450 H970 V399"/>
+  <text x="768" y="466" class="tag" text-anchor="middle">one entry per day</text>
+  <path class="flow" d="M1055,370 H1093"/>
+  <path class="flow" d="M1265,370 H1328"/>
+  <text x="1297" y="362" class="tag" text-anchor="middle">allowed</text>
+  <path class="flow" d="M1180,420 V481"/>
+  <text x="1188" y="456" class="tag">no</text>
+  <path class="back" d="M930,343 V199"/>
+  <text x="922" y="292" class="tag" text-anchor="end">back to the week</text>
+
+  <!-- admin lane -->
+  <path class="flow" d="M315,662 H393"/>
+  <path class="flow" d="M545,670 H623"/>
+  <path class="flow" d="M315,684 H355 V755 H393"/>
+  <path class="flow" d="M240,695 V728"/>
+  <!-- send back: jumps over the save line at x=1420 -->
+  <path class="flow" d="M775,670 H1412 a8,8 0 0,1 16,0 H1600 V405"/>
+  <text x="1010" y="662" class="tag" text-anchor="middle">send back to its owner</text>
+
+  <!-- to the database -->
+  <path class="flow" d="M240,780 V855"/>
+  <text x="248" y="824" class="tag">sets the line</text>
+  <path class="flow" d="M1420,403 V855"/>
+  <text x="1428" y="830" class="tag">writes</text>
+  <path class="flow" d="M1650,403 V855"/>
+  <text x="1658" y="830" class="tag">writes</text>
+
+  <!-- ===== employee lane ===== -->
+  <rect x="130" y="143" width="140" height="54" rx="27" class="start"/>
+  <text x="200" y="166" text-anchor="middle" class="title">Sign in</text>
+  <text x="200" y="183" text-anchor="middle" class="sub">username + password</text>
+
+  <rect x="310" y="143" width="140" height="54" rx="6" class="act"/>
+  <text x="380" y="166" text-anchor="middle" class="title">My week</text>
+  <text x="380" y="183" text-anchor="middle" class="sub">the entry bar</text>
+
+  <polygon points="565,75 635,120 565,165 495,120" class="dec"/>
+  <text x="565" y="116" text-anchor="middle" class="title" font-size="13">Times</text>
+  <text x="565" y="132" text-anchor="middle" class="title" font-size="13">entered?</text>
+
+  <rect x="685" y="93" width="150" height="54" rx="6" class="act"/>
+  <text x="760" y="116" text-anchor="middle" class="title">Add entry</text>
+  <text x="760" y="133" text-anchor="middle" class="sub">start · end · duration</text>
+
+  <rect x="490" y="218" width="150" height="54" rx="6" class="act"/>
+  <text x="565" y="241" text-anchor="middle" class="title">Timer</text>
+  <text x="565" y="258" text-anchor="middle" class="sub">START … STOP</text>
+
+  <rect x="895" y="143" width="150" height="54" rx="6" class="act"/>
+  <text x="970" y="166" text-anchor="middle" class="title">Week view</text>
+  <text x="970" y="183" text-anchor="middle" class="sub">grid + days, newest first</text>
+
+  <rect x="1110" y="83" width="140" height="54" rx="6" class="act"/>
+  <text x="1180" y="106" text-anchor="middle" class="title">Submit week</text>
+  <text x="1180" y="123" text-anchor="middle" class="sub">or reopen it to fix</text>
+
+  <rect x="1110" y="213" width="140" height="54" rx="6" class="act"/>
+  <text x="1180" y="236" text-anchor="middle" class="title">Edit / Delete</text>
+  <text x="1180" y="253" text-anchor="middle" class="sub">an entry</text>
+
+  <!-- ===== server lane ===== -->
+  <rect x="480" y="343" width="170" height="54" rx="6" class="srv"/>
+  <text x="565" y="366" text-anchor="middle" class="title">TimerService</text>
+  <text x="565" y="383" text-anchor="middle" class="sub">exact seconds, split at midnight</text>
+
+  <rect x="675" y="343" width="170" height="54" rx="6" class="srv"/>
+  <text x="760" y="366" text-anchor="middle" class="title">TimeFields</text>
+  <text x="760" y="383" text-anchor="middle" class="sub">parse "115pm", "1:30", "90m"</text>
+
+  <rect x="885" y="343" width="170" height="54" rx="6" class="srv"/>
+  <text x="970" y="366" text-anchor="middle" class="title">TimesheetService</text>
+  <text x="970" y="383" text-anchor="middle" class="sub">the only code that writes</text>
+
+  <polygon points="1180,318 1265,370 1180,422 1095,370" class="dec"/>
+  <text x="1180" y="358" text-anchor="middle" class="title" font-size="13">EditPolicy</text>
+  <text x="1180" y="374" text-anchor="middle" class="sub">your entry? submitted?</text>
+  <text x="1180" y="388" text-anchor="middle" class="sub">period locked?</text>
+
+  <rect x="1095" y="483" width="170" height="54" rx="6" class="bad"/>
+  <text x="1180" y="506" text-anchor="middle" class="title">Refused</text>
+  <text x="1180" y="523" text-anchor="middle" class="sub">clear message, nothing saved</text>
+
+  <rect x="1330" y="337" width="180" height="66" rx="6" class="srv"/>
+  <text x="1420" y="359" text-anchor="middle" class="title">Save + AuditLog</text>
+  <text x="1420" y="376" text-anchor="middle" class="sub">24-hour day cap checked</text>
+  <text x="1420" y="391" text-anchor="middle" class="sub">one transaction</text>
+
+  <rect x="1560" y="337" width="180" height="66" rx="6" class="srv"/>
+  <text x="1650" y="359" text-anchor="middle" class="title">WeekSubmissionService</text>
+  <text x="1650" y="376" text-anchor="middle" class="sub">submit · reopen</text>
+  <text x="1650" y="391" text-anchor="middle" class="sub">EditPolicy + audit</text>
+
+  <!-- ===== admin lane ===== -->
+  <rect x="165" y="645" width="150" height="50" rx="6" class="act"/>
+  <text x="240" y="666" text-anchor="middle" class="title">Team weeks</text>
+  <text x="240" y="683" text-anchor="middle" class="sub">everyone × every week</text>
+
+  <rect x="395" y="645" width="150" height="50" rx="6" class="act"/>
+  <text x="470" y="666" text-anchor="middle" class="title">Open a week</text>
+  <text x="470" y="683" text-anchor="middle" class="sub">read-only</text>
+
+  <rect x="625" y="645" width="150" height="50" rx="6" class="act"/>
+  <text x="700" y="666" text-anchor="middle" class="title">Reopen</text>
+  <text x="700" y="683" text-anchor="middle" class="sub">a submitted week</text>
+
+  <rect x="165" y="730" width="150" height="50" rx="6" class="act"/>
+  <text x="240" y="751" text-anchor="middle" class="title">Close period</text>
+  <text x="240" y="768" text-anchor="middle" class="sub">lock through a date</text>
+
+  <rect x="395" y="730" width="150" height="50" rx="6" class="act"/>
+  <text x="470" y="751" text-anchor="middle" class="title">Export CSV</text>
+  <text x="470" y="768" text-anchor="middle" class="sub">seconds + hours</text>
+
+  <!-- ===== database lane ===== -->
+  <g>
+    <path d="M165,866 a75,9 0 0,0 150,0 a75,9 0 0,0 -150,0 v48 a75,9 0 0,0 150,0 v-48" class="db"/>
+    <text x="240" y="898" text-anchor="middle" class="title" font-size="13">period_lock</text>
+    <text x="240" y="913" text-anchor="middle" class="sub">one "closed through" date</text>
+  </g>
+  <g>
+    <path d="M660,866 a100,9 0 0,0 200,0 a100,9 0 0,0 -200,0 v48 a100,9 0 0,0 200,0 v-48" class="db-ref"/>
+    <text x="760" y="898" text-anchor="middle" class="title" font-size="13">app_user · project · task</text>
+    <text x="760" y="913" text-anchor="middle" class="sub">running_timer</text>
+  </g>
+  <g>
+    <path d="M1345,866 a75,9 0 0,0 150,0 a75,9 0 0,0 -150,0 v48 a75,9 0 0,0 150,0 v-48" class="db"/>
+    <text x="1420" y="898" text-anchor="middle" class="title" font-size="13">time_entry</text>
+    <text x="1420" y="913" text-anchor="middle" class="sub">+ audit_event</text>
+  </g>
+  <g>
+    <path d="M1575,866 a75,9 0 0,0 150,0 a75,9 0 0,0 -150,0 v48 a75,9 0 0,0 150,0 v-48" class="db"/>
+    <text x="1650" y="898" text-anchor="middle" class="title" font-size="13">week_submission</text>
+    <text x="1650" y="913" text-anchor="middle" class="sub">+ audit_event</text>
+  </g>
+
+  <!-- footnote -->
+  <text x="20" y="994" font-size="11" fill="#5b6b80">Every change goes through EditPolicy, then is saved together with its audit_event row. A locked period blocks everyone, admins included; an admin can reopen a week but never edit someone else's hours.</text>
+</svg>
