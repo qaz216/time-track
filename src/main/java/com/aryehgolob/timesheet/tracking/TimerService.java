@@ -55,7 +55,8 @@ public class TimerService {
     /**
      * @param stoppedAt when the work actually ended, if not now (for a timer left
      *                  running overnight); must be between the start and now
-     * @return ids of the entries created, one per calendar day; empty if under a minute
+     * @return ids of the entries created, one per calendar day (at least one: a
+     *         timer stopped within its first minute logs 0:01)
      */
     public List<Long> stop(Actor actor, LocalDateTime stoppedAt) {
         RunningTimer timer = timers.find(actor.userId())

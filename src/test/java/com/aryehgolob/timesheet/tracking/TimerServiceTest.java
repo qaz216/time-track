@@ -82,12 +82,13 @@ class TimerServiceTest extends IntegrationTest {
     }
 
     @Test
-    void underAMinuteLogsNothingButStillStopsTheTimer() {
+    void aTimerStoppedWithinAMinuteStillLogsOneMinute() {
         CurrentUser sam = data.user();
         data.timerStartedAt(sam.id(), data.task(), clock.instant().minusSeconds(20));
 
-        timers.stop(sam.asActor(), null);
+        List<Long> ids = timers.stop(sam.asActor(), null);
 
+        assertThat(ids).singleElement().satisfies(id -> assertThat(data.entry(id).get("minutes")).isEqualTo(1));
         assertThat(data.hasTimer(sam.id())).isFalse();
     }
 

@@ -34,8 +34,15 @@ class TimerSplitTest {
     }
 
     @Test
-    void underAMinuteLogsNothing() {
-        assertThat(TimerSplit.split(at("2026-10-14T10:00:05"), at("2026-10-14T10:00:55"))).isEmpty();
+    void underAMinuteStillLogsOneMinuteNothingIsThrownAway() {
+        assertThat(TimerSplit.split(at("2026-10-14T10:00:05"), at("2026-10-14T10:00:55")))
+                .containsExactly(new Piece(LocalDate.of(2026, 10, 14), new TimeInput(1, LocalTime.of(10, 0))));
+    }
+
+    @Test
+    void aFewSecondsJustBeforeMidnightIsTheDaysLastMinute() {
+        assertThat(TimerSplit.split(at("2026-10-14T23:59:10"), at("2026-10-14T23:59:50")))
+                .containsExactly(new Piece(LocalDate.of(2026, 10, 14), new TimeInput(1, LocalTime.of(23, 59))));
     }
 
     @Test

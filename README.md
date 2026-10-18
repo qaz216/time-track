@@ -195,7 +195,7 @@ The page leads with one bar, modelled on Clockify's tracker:
 ### Timer
 
 - **It lives on the server**, one `running_timer` row per person. Closing the tab, restarting the laptop or switching devices doesn't lose it.
-- **Stopping isn't special.** The time is cut at midnight ([`TimerSplit`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimerSplit.java)), and each piece goes through the same `TimesheetService.addEntry` as typed time, so the same rules, cap and audit apply. Times are the wall clock truncated to the minute, exactly what you'd write down.
+- **Stopping isn't special.** The time is cut at midnight ([`TimerSplit`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimerSplit.java)), and each piece goes through the same `TimesheetService.addEntry` as typed time, so the same rules, cap and audit apply. Times are the wall clock truncated to the minute, exactly what you'd write down. **Time is never thrown away:** a timer stopped within the minute it started logs 0:01, the smallest amount the timesheet holds.
 - **Starting another task while one runs** stops and logs the first, so switching is one action.
 - **Forgotten timers:** after 10 hours the chip says *Review*, and the week page asks when you really stopped before logging anything, or lets you discard it.
 - **If the time can't be logged** (the week was submitted or locked while it ran), the stop is refused and the timer keeps running, so nothing is silently lost.

@@ -1,7 +1,6 @@
 package com.aryehgolob.timesheet.tracking.web;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -55,10 +54,7 @@ class TimerController {
             @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime stoppedAt,
             RedirectAttributes redirect) {
         try {
-            List<Long> created = timers.stop(user.asActor(), stoppedAt);
-            if (created.isEmpty()) {
-                redirect.addFlashAttribute("notice", "The timer ran for under a minute, so nothing was logged.");
-            }
+            timers.stop(user.asActor(), stoppedAt);
         } catch (InvalidInputException | NotAllowedException e) {
             redirect.addFlashAttribute("error", "Couldn't log the timer: " + e.getMessage()
                     + " It is still running; you can discard it.");
