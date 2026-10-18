@@ -86,3 +86,24 @@ The two small icons at the right end of the bar switch modes. The highlighted on
 ![Manual (ADD) and Timer (START/STOP) compared](docs/entry-modes.png)
 
 </details>
+
+## Your week at a glance
+
+The front page sums up your week. Here's what a real week looks like: Sam's sample week, with 16 entries across both projects.
+
+### The summary
+
+![Week of 12 Oct: a Draft badge, a 33:12:42 week total and a Submit week button above a grid of Project › Task rows by day, with daily and weekly totals](docs/week-summary.png)
+
+- **Week total and status.** The large number is the week's total (here 33:12:42). The badge shows whether the week is a **Draft** or **Submitted**.
+- **The grid.** There's one row per *Project › Task* and one column per day. The **Total** row and column give daily and per-task sums, so the time that goes on each task is easy to see.
+- **Move between weeks** with *← Previous*, *This week* and *Next →*, or the <kbd>[</kbd> and <kbd>]</kbd> keys.
+- **Submit week** when it's complete. It then becomes read-only, and an admin sees it as submitted.
+
+### Every entry, day by day
+
+![Each day as a card, newest first, with the day's total and every entry's note, project and task, time range, duration, and Edit and Delete links](docs/week-days.png)
+
+- Each day you logged time gets a card with its total. The newest day comes first, and days with no time are left out.
+- Each entry shows its note, its *Project › Task* (with the project's colour), its start and end times, and its exact duration.
+- **Edit** opens the entry in place, where you can change the times, the note or the task. **Delete** removes it. Both are recorded in the audit trail.
