@@ -4,11 +4,23 @@ A timesheet app for logging time against projects and tasks. Type in what you wo
 
 ## How to run
 
+Pick either option. Both need **Docker** running.
+
+**Option 1: Docker Compose.** Runs the app and the database in containers. Your data is kept between runs.
+
 ```bash
 docker compose up --build
 ```
 
-Open **http://localhost:8080** and sign in.
+**Option 2: Maven.** Runs the app on your machine with **JDK 21**, and Maven starts PostgreSQL in a throwaway container. Every start begins with a fresh database.
+
+```bash
+./mvnw spring-boot:test-run -Dspring-boot.run.profiles=dev
+```
+
+> In PowerShell, quote the profile flag: `.\mvnw spring-boot:test-run "-Dspring-boot.run.profiles=dev"`
+
+Then open **http://localhost:8080** and sign in.
 
 ## Sign in
 
