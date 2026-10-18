@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="300" viewBox="0 0 1400 300"
+     font-family="Segoe UI, Arial, sans-serif">
+  <style>
+    .title { font-size: 19px; font-weight: 700; fill: #1f3864; }
+    .sub   { font-size: 13px; fill: #44546a; }
+    .day   { font-size: 16px; font-weight: 600; fill: #1f2937; }
+    .date  { font-size: 13px; fill: #44546a; }
+    .state { font-size: 13px; font-weight: 600; }
+    .locked { fill: #eef0f3; stroke: #b8bfca; stroke-width: 1.2; }
+    .open   { fill: #e2f0d9; stroke: #548235; stroke-width: 1.2; }
+    .lk { fill: #6b7280; }
+    .ok { fill: #3a6b23; }
+  </style>
+  <rect width="1400" height="300" fill="#ffffff"/>
+  <text x="30" y="38" class="title">One line: "locked through 30 Sep"</text>
+  <text x="30" y="62" class="sub">Everything on or before the line is frozen for everyone. Everything after it works as normal, even in the same week.</text>
+
+  <!-- the earlier weeks, all locked -->
+  <rect x="30" y="100" width="150" height="110" rx="8" class="locked"/>
+  <text x="105" y="140" class="day" text-anchor="middle">Earlier weeks</text>
+  <text x="105" y="162" class="date" text-anchor="middle">… 27 Sep</text>
+  <text x="105" y="192" class="state lk" text-anchor="middle">🔒 Locked</text>
+
+  <!-- week of 28 Sep -->
+  <text x="210" y="92" class="sub">Week of 28 Sep</text>
+  <g transform="translate(210,100)">
+    <rect x="0"   width="120" height="110" rx="8" class="locked"/><text x="60"  y="40" class="day" text-anchor="middle">Mon</text><text x="60"  y="62" class="date" text-anchor="middle">28 Sep</text><text x="60"  y="92" class="state lk" text-anchor="middle">🔒 Locked</text>
+    <rect x="130" width="120" height="110" rx="8" class="locked"/><text x="190" y="40" class="day" text-anchor="middle">Tue</text><text x="190" y="62" class="date" text-anchor="middle">29 Sep</text><text x="190" y="92" class="state lk" text-anchor="middle">🔒 Locked</text>
+    <rect x="260" width="120" height="110" rx="8" class="locked"/><text x="320" y="40" class="day" text-anchor="middle">Wed</text><text x="320" y="62" class="date" text-anchor="middle">30 Sep</text><text x="320" y="92" class="state lk" text-anchor="middle">🔒 Locked</text>
+    <rect x="410" width="120" height="110" rx="8" class="open"/><text x="470" y="40" class="day" text-anchor="middle">Thu</text><text x="470" y="62" class="date" text-anchor="middle">1 Oct</text><text x="470" y="92" class="state ok" text-anchor="middle">Open</text>
+    <rect x="540" width="120" height="110" rx="8" class="open"/><text x="600" y="40" class="day" text-anchor="middle">Fri</text><text x="600" y="62" class="date" text-anchor="middle">2 Oct</text><text x="600" y="92" class="state ok" text-anchor="middle">Open</text>
+    <rect x="670" width="120" height="110" rx="8" class="open"/><text x="730" y="40" class="day" text-anchor="middle">Sat</text><text x="730" y="62" class="date" text-anchor="middle">3 Oct</text><text x="730" y="92" class="state ok" text-anchor="middle">Open</text>
+    <rect x="800" width="120" height="110" rx="8" class="open"/><text x="860" y="40" class="day" text-anchor="middle">Sun</text><text x="860" y="62" class="date" text-anchor="middle">4 Oct</text><text x="860" y="92" class="state ok" text-anchor="middle">Open</text>
+  </g>
+  <rect x="1140" y="100" width="230" height="110" rx="8" class="open"/>
+  <text x="1255" y="140" class="day" text-anchor="middle">Later weeks</text>
+  <text x="1255" y="162" class="date" text-anchor="middle">5 Oct …</text>
+  <text x="1255" y="192" class="state ok" text-anchor="middle">Open</text>
+
+  <!-- the line -->
+  <line x1="605" y1="84" x2="605" y2="236" stroke="#c00000" stroke-width="3" stroke-dasharray="7 5"/>
+  <rect x="505" y="240" width="200" height="30" rx="15" fill="#fbe0e0" stroke="#c00000" stroke-width="1.2"/>
+  <text x="605" y="260" font-size="13" font-weight="700" fill="#c00000" text-anchor="middle">Locked through 30 Sep</text>
+  <text x="300" y="260" class="sub" text-anchor="middle">no add, edit, delete, submit or reopen</text>
+  <text x="930" y="260" class="sub" text-anchor="middle">log and edit as usual; the week can still be submitted</text>
+</svg>

@@ -153,3 +153,43 @@ grace@example.com,Grace Okafor,2026-09-28,draft,,AMZ,Amazon,Deployment,yes,46800
 ```
 
 `seconds` is exact, and `week_status` is on every row, so draft hours can't slip into an invoice unnoticed.
+
+## Close period (admins)
+
+Once the hours for a period have gone out on payroll or invoices, they shouldn't change. **Close period** lets an admin "close the books" up to a date. From then on, nobody can change time on or before that day, admins included.
+
+### 1. Pick the last day to close
+
+Open **Close period** from the top bar. The date defaults to the last day of the previous month, which is the usual month-end close. Click **Lock**.
+
+![Close the books: "Nothing is locked", a date box set to 09/30/2026 and a Lock button](docs/period-open.png)
+
+### 2. The books are closed
+
+The page confirms the line. Locking only works on days that have already happened, so you can't freeze the future by accident.
+
+![Close the books: "Locked through 30 Sep 2026. Nobody, admins included, can change time on or before that day", with Lock and Remove lock buttons](docs/period-locked.png)
+
+### How the line works
+
+There's only one line. Every day up to and including it is frozen, and every day after it works as normal, **even within the same week**:
+
+![A timeline: earlier weeks and Mon 28 to Wed 30 Sep are grey and locked; a red dashed line marks "Locked through 30 Sep"; Thu 1 Oct onwards is green and open](docs/period-line.png)
+
+| | On or before the line | After the line |
+|---|---|---|
+| Add, edit or delete time | ❌ refused for everyone | ✅ as usual |
+| Submit or reopen a week | ❌ if the whole week is closed | ✅ (a week that crosses the line still can be) |
+| Timesheet shows | a **Locked** badge, no Edit or Delete | Edit and Delete as usual |
+
+### What people see
+
+Here's Jo's week of 28 Sep after September was closed. Jo tried to add a *Late expense report* on Tue 29 Sep, and the app refused, keeping what was typed so nothing is lost. Mon to Wed show **Locked** with no Edit or Delete. Thu and Fri can still be changed, and the week can still be submitted.
+
+![Jo Chen's week of 28 Sep: a red "This period is closed by finance." message above the entry bar, which still holds the refused entry. Wed 30, Tue 29 and Mon 28 Sep have Locked badges and no Edit links, while Fri 2 and Thu 1 Oct keep Edit and Delete](docs/period-week.png)
+
+### Moving or removing the line
+
+- **Move it forward** whenever the next period closes: pick a later date and click **Lock** again.
+- **Move it back or Remove lock** if a period was closed by mistake. *Remove lock* asks for confirmation first.
+- Every lock, move and removal is recorded in the audit trail with who did it and when.
