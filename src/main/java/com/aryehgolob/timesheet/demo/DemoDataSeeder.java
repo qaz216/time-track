@@ -3,6 +3,9 @@ package com.aryehgolob.timesheet.demo;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +38,19 @@ import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 class DemoDataSeeder implements ApplicationRunner {
 
     static final String DEMO_PASSWORD = "demo1234";
+
+    /** Shown in the task picker as "CTG · Project Administration" and so on. */
+    static final List<String> CTG_TASKS = List.of(
+            "Project Administration",
+            "Financial Management",
+            "Budget Planning & Tracking",
+            "Resource Management",
+            "Vendor Management",
+            "Contract Administration",
+            "Billing & Invoicing",
+            "Operations Management",
+            "Compliance & Reporting",
+            "Strategic Planning");
     private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
 
     private final AppUserRepository users;
@@ -68,17 +84,16 @@ class DemoDataSeeder implements ApplicationRunner {
         AppUser sam = users.save(new AppUser("sam@example.com", "Sam Rivera", hash, Role.USER));
         AppUser jo = users.save(new AppUser("jo@example.com", "Jo Chen", hash, Role.USER));
 
-        Project acme = projects.save(new Project("ACME-WEB", "Website rebuild", "Acme Corp"));
-        Task acmeDev = tasks.save(new Task(acme, "Development", true));
-        Task acmeMeetings = tasks.save(new Task(acme, "Meetings", true));
-
-        Project globex = projects.save(new Project("GLOBEX-DATA", "Data migration", "Globex"));
-        Task migration = tasks.save(new Task(globex, "Migration", true));
-        Task analysis = tasks.save(new Task(globex, "Analysis", true));
-
-        Project internal = projects.save(new Project("INTERNAL", "Internal", "Our company"));
-        tasks.save(new Task(internal, "Admin", false));
-        Task training = tasks.save(new Task(internal, "Training", false));
+        Project ctg = projects.save(new Project("CTG", "CTG", "CTG"));
+        Map<String, Task> task = new HashMap<>();
+        for (String name : CTG_TASKS) {
+            task.put(name, tasks.save(new Task(ctg, name, true)));
+        }
+        long projectAdmin = task.get("Project Administration").getId();
+        long operations = task.get("Operations Management").getId();
+        long finance = task.get("Financial Management").getId();
+        long budget = task.get("Budget Planning & Tracking").getId();
+        long compliance = task.get("Compliance & Reporting").getId();
 
         // Two finished weeks plus this week so far. Sam submitted both; Jo forgot one.
         Actor samActor = new Actor(sam.getId(), false);
@@ -90,12 +105,12 @@ class DemoDataSeeder implements ApplicationRunner {
                 if (!day.isBefore(today) || day.getDayOfWeek().getValue() > DayOfWeek.FRIDAY.getValue()) {
                     continue;
                 }
-                timesheets.addEntry(samActor, acmeDev.getId(), day, "9:00-12:30", null);
-                timesheets.addEntry(samActor, acmeMeetings.getId(), day, "12:30-13:00", "Standup");
-                timesheets.addEntry(samActor, acmeDev.getId(), day, "13:30-17:15", null);
-                timesheets.addEntry(joActor, migration.getId(), day, "6:45", null);
-                timesheets.addEntry(joActor, day.getDayOfWeek() == DayOfWeek.FRIDAY ? training.getId()
-                        : analysis.getId(), day, "1:15", null);
+                timesheets.addEntry(samActor, projectAdmin, day, "9:00-12:30", null);
+                timesheets.addEntry(samActor, operations, day, "12:30-13:00", "Standup");
+                timesheets.addEntry(samActor, projectAdmin, day, "13:30-17:15", null);
+                timesheets.addEntry(joActor, finance, day, "6:45", null);
+                timesheets.addEntry(joActor, day.getDayOfWeek() == DayOfWeek.FRIDAY ? compliance : budget,
+                        day, "1:15", null);
             }
         }
         submissions.submit(samActor, sam.getId(), thisWeek.previous().previous());

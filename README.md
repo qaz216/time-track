@@ -34,7 +34,7 @@ Run the tests (needs Docker running, for Testcontainers):
 
 ## A two-minute tour
 
-1. **Sign in as Sam.** Focus is already on the task picker. Type `a`, Tab, Tab, `9:05-10:42`, Tab, a note, Enter. Then type `1.5` and Enter: the second entry reuses the same task and day. Now try `1.33`.
+1. **Sign in as Sam.** Focus is already on the task picker. Type `p` (Project Administration), Tab, Tab, `9:05-10:42`, Tab, a note, Enter. Then type `1.5` and Enter: the second entry reuses the same task and day. Now try `1.33`.
 2. Press `t` to start a timer; the header chip ticks on every page. Press `t` again to stop and log it.
 3. Click **Submit week**. The week goes read-only; **Reopen** brings it back.
 4. **Sign in as the admin** and open **Team weeks**: everyone × every week, ✓ for submitted, with Jo's missing week easy to spot. Click a cell to see that week, then **Export CSV**.
@@ -166,7 +166,7 @@ A week is a **draft** until you press *Submit week*; then it's read-only. You ca
 
 ```
 email,name,week_start,week_status,client,project_code,project,task,billable,minutes,hours
-jo@example.com,Jo Chen,2026-09-28,submitted,Globex,GLOBEX-DATA,Data migration,Migration,yes,2025,33.75
+jo@example.com,Jo Chen,2026-09-28,submitted,CTG,CTG,CTG,Financial Management,yes,2025,33.75
 ```
 
 - **`minutes` is exact and is the column to reconcile on.** `hours` is the same value to two decimals, for reading.

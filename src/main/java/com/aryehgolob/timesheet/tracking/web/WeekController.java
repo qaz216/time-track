@@ -2,6 +2,8 @@ package com.aryehgolob.timesheet.tracking.web;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.aryehgolob.timesheet.catalog.Catalog;
+import com.aryehgolob.timesheet.catalog.TaskOption;
 import com.aryehgolob.timesheet.identity.CurrentUser;
 import com.aryehgolob.timesheet.tracking.WeekQueries;
 import com.aryehgolob.timesheet.tracking.WeekSubmissionService;
@@ -54,7 +57,9 @@ class WeekController {
         model.addAttribute("weekUrl", "/");
         model.addAttribute("reopenUrl", "/weeks/" + view.week().start() + "/reopen");
         model.addAttribute("editId", edit);
-        model.addAttribute("tasks", catalog.activeTasks());
+        // grouped by project so options are task names, and type-to-select works on them
+        model.addAttribute("taskGroups", catalog.activeTasks().stream()
+                .collect(Collectors.groupingBy(TaskOption::projectCode, LinkedHashMap::new, Collectors.toList())));
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", EntryForm.blank(defaultDay(view, LocalDate.now(clock))));
         }
