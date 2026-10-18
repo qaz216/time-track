@@ -1,5 +1,6 @@
 package com.aryehgolob.timesheet.identity;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
@@ -12,6 +13,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -93,6 +97,16 @@ class SecurityTest extends IntegrationTest {
         void loginPageAndStylesArePublic() throws Exception {
             mvc.perform(get("/login")).andExpect(status().isOk());
             mvc.perform(get("/css/app.css")).andExpect(status().isOk());
+        }
+
+        @Test
+        void scriptsAndStylesAreLinkedByContentHashSoBrowsersNeverRunStaleCopies() throws Exception {
+            String page = mvc.perform(get("/login")).andReturn().getResponse().getContentAsString();
+
+            Matcher css = Pattern.compile("/css/app-[0-9a-f]{32}\\.css").matcher(page);
+            assertThat(css.find()).as("hashed stylesheet link").isTrue();
+            assertThat(page).containsPattern("/js/time-fields-[0-9a-f]{32}\\.js");
+            mvc.perform(get(css.group())).andExpect(status().isOk());
         }
 
         @Test

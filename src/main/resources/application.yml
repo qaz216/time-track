@@ -12,6 +12,15 @@ spring:
   threads:
     virtual:
       enabled: true
+  web:
+    resources:
+      # CSS and JS are served under a content hash (/js/app-3f2a….js), so a browser
+      # can never keep running an old copy after an update.
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: /**
 
 timesheet:
   # One company, one office calendar. Used to decide what "today" is and where
