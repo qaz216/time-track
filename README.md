@@ -73,11 +73,13 @@ Run the tests (needs Docker running, for Testcontainers):
 
 ## Data model
 
-Eight tables, built by three small migrations: [`V1__schema.sql`](src/main/resources/db/migration/V1__schema.sql) (the model), [`V2__default_tasks.sql`](src/main/resources/db/migration/V2__default_tasks.sql) (log against a project directly) and [`V3__seconds.sql`](src/main/resources/db/migration/V3__seconds.sql) (exact seconds).
+![Database schema: eight tables and how they relate](docs/schema.png)
+
+Eight tables, built by four small migrations: [`V1__schema.sql`](src/main/resources/db/migration/V1__schema.sql) (the model), [`V2__default_tasks.sql`](src/main/resources/db/migration/V2__default_tasks.sql) (log against a project directly), [`V3__seconds.sql`](src/main/resources/db/migration/V3__seconds.sql) (exact seconds) and [`V4__usernames.sql`](src/main/resources/db/migration/V4__usernames.sql) (sign in with a username). (Editable diagram: [`docs/schema.svg`](docs/schema.svg).)
 
 | Table | Holds | Notes |
 |---|---|---|
-| `app_user` | people, `USER` or `ADMIN` | Deactivated, never deleted |
+| `app_user` | people: username, email, `USER` or `ADMIN` | Deactivated, never deleted |
 | `project`, `task` | what time is logged against | Archived, never deleted, so old entries always resolve. A project can have a hidden *default task* (`is_default`), so time can be logged against just the project |
 | `time_entry` | user, task, `work_date`, `seconds`, optional `start_time`, note, `version` | The only time data |
 | `week_submission` | (user, Monday) | A row means submitted; no row means draft |

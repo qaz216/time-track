@@ -1,0 +1,229 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="915" viewBox="0 0 1640 915"
+     font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <!-- crow's-foot notation; drawn as if at the child end, flipped automatically at the parent end -->
+    <marker id="many" viewBox="0 0 16 14" refX="16" refY="7" markerWidth="16" markerHeight="14"
+            markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,7 L16,0 M0,7 L16,7 M0,7 L16,14" fill="none" stroke="#44546a" stroke-width="1.4"/>
+    </marker>
+    <marker id="one" viewBox="0 0 16 14" refX="16" refY="7" markerWidth="16" markerHeight="14"
+            markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M8,0 V14 M12,0 V14" fill="none" stroke="#44546a" stroke-width="1.4"/>
+    </marker>
+    <marker id="zeroOne" viewBox="0 0 16 14" refX="16" refY="7" markerWidth="16" markerHeight="14"
+            markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <circle cx="5" cy="7" r="4" fill="#ffffff" stroke="#44546a" stroke-width="1.4"/>
+      <path d="M13,0 V14" fill="none" stroke="#44546a" stroke-width="1.4"/>
+    </marker>
+    <style>
+      .box    { fill: #ffffff; stroke: #2f5597; stroke-width: 1.4; }
+      .head   { fill: #2f5597; }
+      .tname  { font-size: 14px; font-weight: 700; fill: #ffffff; }
+      .col    { font-size: 12.5px; fill: #1f2937; }
+      .type   { font-size: 12px; fill: #2f5597; font-family: Consolas, "Courier New", monospace; }
+      .note   { font-size: 11px; fill: #6b7280; font-style: italic; }
+      .cap    { font-size: 11px; fill: #5b6b80; font-style: italic; }
+      .pk     { fill: #fff2cc; stroke: #bf9000; }
+      .fk     { fill: #dbe8f7; stroke: #2f5597; }
+      .uq     { fill: #ead9f5; stroke: #7030a0; }
+      .badge  { font-size: 9.5px; font-weight: 700; fill: #1f2937; }
+      .rel    { fill: none; stroke: #44546a; stroke-width: 1.4; }
+      .verb   { font-size: 11px; fill: #44546a; font-style: italic; }
+      .stripe { fill: #f3f6fb; }
+    </style>
+  </defs>
+
+  <rect width="1640" height="915" fill="#ffffff"/>
+  <text x="20" y="34" font-size="19" font-weight="700" fill="#1f3864">Timesheet: database schema</text>
+  <text x="330" y="34" font-size="12.5" fill="#5b6b80">PostgreSQL · built by Flyway migrations V1–V4 · the database enforces what must never be wrong</text>
+
+  <!-- ===================== relationships (under the tables) ===================== -->
+  <!-- app_user 1 — * time_entry -->
+  <path class="rel" d="M460,354 H530 V399 H610" marker-start="url(#one)" marker-end="url(#many)"/>
+  <text x="536" y="380" class="verb">logs</text>
+  <!-- task 1 — * time_entry -->
+  <path class="rel" d="M1180,377 H1105 V421 H1030" marker-start="url(#one)" marker-end="url(#many)"/>
+  <text x="1112" y="370" class="verb">time against</text>
+  <!-- project 1 — * task -->
+  <path class="rel" d="M1580,697 H1612 V399 H1580" marker-start="url(#one)" marker-end="url(#many)"/>
+  <text x="1620" y="556" class="verb" transform="rotate(90 1620 556)" text-anchor="middle">has tasks</text>
+  <!-- app_user 1 — * week_submission -->
+  <path class="rel" d="M60,347 H36 V117 H60" marker-start="url(#one)" marker-end="url(#many)"/>
+  <text x="30" y="232" class="verb" transform="rotate(-90 30 232)" text-anchor="middle">submits</text>
+  <!-- app_user 1 — 0..1 running_timer -->
+  <path class="rel" d="M460,340 H500 V117 H610" marker-start="url(#one)" marker-end="url(#zeroOne)"/>
+  <text x="506" y="230" class="verb">runs at most one</text>
+  <!-- task 1 — * running_timer -->
+  <path class="rel" d="M1280,330 V139 H1030" marker-start="url(#one)" marker-end="url(#many)"/>
+  <text x="1150" y="131" class="verb" text-anchor="middle">timed against</text>
+  <!-- app_user 1 — * audit_event -->
+  <path class="rel" d="M60,480 H36 V701 H60" marker-start="url(#one)" marker-end="url(#many)"/>
+  <text x="30" y="592" class="verb" transform="rotate(-90 30 592)" text-anchor="middle">acts</text>
+  <!-- app_user 1 — 0..1 period_lock -->
+  <path class="rel" d="M460,500 H560 V791 H610" marker-start="url(#one)" marker-end="url(#zeroOne)"/>
+  <text x="566" y="650" class="verb">locks</text>
+
+  <!-- ===================== week_submission ===================== -->
+  <g transform="translate(60,70)">
+    <rect width="400" height="106" rx="5" class="box"/>
+    <path d="M0,5 a5,5 0 0,1 5,-5 h390 a5,5 0 0,1 5,5 v27 h-400 z" class="head"/>
+    <text x="12" y="21" class="tname">week_submission</text>
+    <rect x="8" y="40" width="26" height="15" rx="3" class="pk"/><text x="21" y="51" class="badge" text-anchor="middle">PK</text>
+    <rect x="36" y="40" width="22" height="15" rx="3" class="fk"/><text x="47" y="51" class="badge" text-anchor="middle">FK</text>
+    <text x="64" y="51" class="col">user_id</text><text x="168" y="51" class="type">bigint</text><text x="392" y="51" class="note" text-anchor="end">→ app_user</text>
+    <rect x="0" y="58" width="400" height="22" class="stripe"/>
+    <rect x="8" y="62" width="26" height="15" rx="3" class="pk"/><text x="21" y="73" class="badge" text-anchor="middle">PK</text>
+    <text x="64" y="73" class="col">week_start</text><text x="168" y="73" class="type">date</text><text x="392" y="73" class="note" text-anchor="end">Mondays only</text>
+    <text x="64" y="95" class="col">submitted_at</text><text x="168" y="95" class="type">timestamptz</text>
+  </g>
+  <text x="60" y="194" class="cap">a row means submitted; no row means draft (reopen deletes it)</text>
+
+  <!-- ===================== app_user ===================== -->
+  <g transform="translate(60,300)">
+    <rect width="400" height="216" rx="5" class="box"/>
+    <path d="M0,5 a5,5 0 0,1 5,-5 h390 a5,5 0 0,1 5,5 v27 h-400 z" class="head"/>
+    <text x="12" y="21" class="tname">app_user</text>
+    <rect x="8" y="40" width="26" height="15" rx="3" class="pk"/><text x="21" y="51" class="badge" text-anchor="middle">PK</text>
+    <text x="64" y="51" class="col">id</text><text x="168" y="51" class="type">bigint</text><text x="392" y="51" class="note" text-anchor="end">identity</text>
+    <rect x="0" y="58" width="400" height="22" class="stripe"/>
+    <rect x="8" y="62" width="26" height="15" rx="3" class="uq"/><text x="21" y="73" class="badge" text-anchor="middle">UQ</text>
+    <text x="64" y="73" class="col">username</text><text x="168" y="73" class="type">varchar(100)</text><text x="392" y="73" class="note" text-anchor="end">used to sign in</text>
+    <rect x="8" y="84" width="26" height="15" rx="3" class="uq"/><text x="21" y="95" class="badge" text-anchor="middle">UQ</text>
+    <text x="64" y="95" class="col">email</text><text x="168" y="95" class="type">varchar(254)</text>
+    <rect x="0" y="102" width="400" height="22" class="stripe"/>
+    <text x="64" y="117" class="col">display_name</text><text x="168" y="117" class="type">varchar(100)</text>
+    <text x="64" y="139" class="col">password_hash</text><text x="168" y="139" class="type">varchar(100)</text><text x="392" y="139" class="note" text-anchor="end">bcrypt</text>
+    <rect x="0" y="146" width="400" height="22" class="stripe"/>
+    <text x="64" y="161" class="col">role</text><text x="168" y="161" class="type">varchar(10)</text><text x="392" y="161" class="note" text-anchor="end">USER | ADMIN</text>
+    <text x="64" y="183" class="col">active</text><text x="168" y="183" class="type">boolean</text><text x="392" y="183" class="note" text-anchor="end">deactivated, never deleted</text>
+    <rect x="0" y="190" width="400" height="22" class="stripe"/>
+    <text x="64" y="205" class="col">created_at</text><text x="168" y="205" class="type">timestamptz</text>
+  </g>
+
+  <!-- ===================== audit_event ===================== -->
+  <g transform="translate(60,610)">
+    <rect width="400" height="216" rx="5" class="box"/>
+    <path d="M0,5 a5,5 0 0,1 5,-5 h390 a5,5 0 0,1 5,5 v27 h-400 z" class="head"/>
+    <text x="12" y="21" class="tname">audit_event</text>
+    <rect x="8" y="40" width="26" height="15" rx="3" class="pk"/><text x="21" y="51" class="badge" text-anchor="middle">PK</text>
+    <text x="64" y="51" class="col">id</text><text x="168" y="51" class="type">bigint</text>
+    <rect x="0" y="58" width="400" height="22" class="stripe"/>
+    <text x="64" y="73" class="col">occurred_at</text><text x="168" y="73" class="type">timestamptz</text>
+    <rect x="8" y="84" width="22" height="15" rx="3" class="fk"/><text x="19" y="95" class="badge" text-anchor="middle">FK</text>
+    <text x="64" y="95" class="col">actor_id</text><text x="168" y="95" class="type">bigint</text><text x="392" y="95" class="note" text-anchor="end">→ app_user (who did it)</text>
+    <rect x="0" y="102" width="400" height="22" class="stripe"/>
+    <text x="64" y="117" class="col">entity_type</text><text x="168" y="117" class="type">varchar(30)</text><text x="392" y="117" class="note" text-anchor="end">time_entry, week, lock</text>
+    <text x="64" y="139" class="col">entity_id</text><text x="168" y="139" class="type">varchar(60)</text>
+    <rect x="0" y="146" width="400" height="22" class="stripe"/>
+    <text x="64" y="161" class="col">action</text><text x="168" y="161" class="type">varchar(20)</text><text x="392" y="161" class="note" text-anchor="end">CREATE, UPDATE, …</text>
+    <text x="64" y="183" class="col">before</text><text x="168" y="183" class="type">jsonb</text><text x="392" y="183" class="note" text-anchor="end">snapshot before the change</text>
+    <rect x="0" y="190" width="400" height="22" class="stripe"/>
+    <text x="64" y="205" class="col">after</text><text x="168" y="205" class="type">jsonb</text><text x="392" y="205" class="note" text-anchor="end">snapshot after it</text>
+  </g>
+  <text x="60" y="844" class="cap">append-only, written in the same transaction as the change</text>
+
+  <!-- ===================== running_timer ===================== -->
+  <g transform="translate(610,70)">
+    <rect width="420" height="128" rx="5" class="box"/>
+    <path d="M0,5 a5,5 0 0,1 5,-5 h410 a5,5 0 0,1 5,5 v27 h-420 z" class="head"/>
+    <text x="12" y="21" class="tname">running_timer</text>
+    <rect x="8" y="40" width="26" height="15" rx="3" class="pk"/><text x="21" y="51" class="badge" text-anchor="middle">PK</text>
+    <rect x="36" y="40" width="22" height="15" rx="3" class="fk"/><text x="47" y="51" class="badge" text-anchor="middle">FK</text>
+    <text x="64" y="51" class="col">user_id</text><text x="168" y="51" class="type">bigint</text><text x="412" y="51" class="note" text-anchor="end">→ app_user · one timer per person</text>
+    <rect x="0" y="58" width="420" height="22" class="stripe"/>
+    <rect x="8" y="62" width="22" height="15" rx="3" class="fk"/><text x="19" y="73" class="badge" text-anchor="middle">FK</text>
+    <text x="64" y="73" class="col">task_id</text><text x="168" y="73" class="type">bigint</text><text x="412" y="73" class="note" text-anchor="end">→ task</text>
+    <text x="64" y="95" class="col">started_at</text><text x="168" y="95" class="type">timestamptz</text>
+    <rect x="0" y="102" width="420" height="22" class="stripe"/>
+    <text x="64" y="117" class="col">note</text><text x="168" y="117" class="type">varchar(500)</text>
+  </g>
+  <text x="610" y="216" class="cap">lives on the server, so closing the tab doesn't lose it</text>
+
+  <!-- ===================== time_entry ===================== -->
+  <g transform="translate(610,330)">
+    <rect width="420" height="260" rx="5" class="box"/>
+    <path d="M0,5 a5,5 0 0,1 5,-5 h410 a5,5 0 0,1 5,5 v27 h-420 z" class="head"/>
+    <text x="12" y="21" class="tname">time_entry</text>
+    <rect x="8" y="40" width="26" height="15" rx="3" class="pk"/><text x="21" y="51" class="badge" text-anchor="middle">PK</text>
+    <text x="64" y="51" class="col">id</text><text x="168" y="51" class="type">bigint</text>
+    <rect x="0" y="58" width="420" height="22" class="stripe"/>
+    <rect x="8" y="62" width="22" height="15" rx="3" class="fk"/><text x="19" y="73" class="badge" text-anchor="middle">FK</text>
+    <text x="64" y="73" class="col">user_id</text><text x="168" y="73" class="type">bigint</text><text x="412" y="73" class="note" text-anchor="end">→ app_user</text>
+    <rect x="8" y="84" width="22" height="15" rx="3" class="fk"/><text x="19" y="95" class="badge" text-anchor="middle">FK</text>
+    <text x="64" y="95" class="col">task_id</text><text x="168" y="95" class="type">bigint</text><text x="412" y="95" class="note" text-anchor="end">→ task</text>
+    <rect x="0" y="102" width="420" height="22" class="stripe"/>
+    <text x="64" y="117" class="col">work_date</text><text x="168" y="117" class="type">date</text><text x="412" y="117" class="note" text-anchor="end">a calendar day, no time zone</text>
+    <text x="64" y="139" class="col" font-weight="700">seconds</text><text x="168" y="139" class="type">integer</text><text x="412" y="139" class="note" text-anchor="end">exact, 1 to 86,400 · never rounded</text>
+    <rect x="0" y="146" width="420" height="22" class="stripe"/>
+    <text x="64" y="161" class="col">start_time</text><text x="168" y="161" class="type">time</text><text x="412" y="161" class="note" text-anchor="end">optional · end = start + seconds</text>
+    <text x="64" y="183" class="col">note</text><text x="168" y="183" class="type">varchar(500)</text><text x="412" y="183" class="note" text-anchor="end">"What have you worked on?"</text>
+    <rect x="0" y="190" width="420" height="22" class="stripe"/>
+    <text x="64" y="205" class="col">version</text><text x="168" y="205" class="type">integer</text><text x="412" y="205" class="note" text-anchor="end">optimistic locking (two tabs)</text>
+    <text x="64" y="227" class="col">created_at</text><text x="168" y="227" class="type">timestamptz</text>
+    <rect x="0" y="234" width="420" height="22" class="stripe"/>
+    <text x="64" y="249" class="col">updated_at</text><text x="168" y="249" class="type">timestamptz</text>
+  </g>
+  <text x="610" y="608" class="cap">checks: 1 ≤ seconds ≤ 86,400 · a clock range never crosses midnight · indexed on (user_id, work_date)</text>
+
+  <!-- ===================== period_lock ===================== -->
+  <g transform="translate(610,700)">
+    <rect width="420" height="128" rx="5" class="box"/>
+    <path d="M0,5 a5,5 0 0,1 5,-5 h410 a5,5 0 0,1 5,5 v27 h-420 z" class="head"/>
+    <text x="12" y="21" class="tname">period_lock</text>
+    <rect x="8" y="40" width="26" height="15" rx="3" class="pk"/><text x="21" y="51" class="badge" text-anchor="middle">PK</text>
+    <text x="64" y="51" class="col">id</text><text x="168" y="51" class="type">smallint</text><text x="412" y="51" class="note" text-anchor="end">always 1: a single row</text>
+    <rect x="0" y="58" width="420" height="22" class="stripe"/>
+    <text x="64" y="73" class="col">locked_through</text><text x="168" y="73" class="type">date</text><text x="412" y="73" class="note" text-anchor="end">nothing on or before it can change</text>
+    <rect x="8" y="84" width="22" height="15" rx="3" class="fk"/><text x="19" y="95" class="badge" text-anchor="middle">FK</text>
+    <text x="64" y="95" class="col">locked_by</text><text x="168" y="95" class="type">bigint</text><text x="412" y="95" class="note" text-anchor="end">→ app_user (an admin)</text>
+    <rect x="0" y="102" width="420" height="22" class="stripe"/>
+    <text x="64" y="117" class="col">locked_at</text><text x="168" y="117" class="type">timestamptz</text>
+  </g>
+  <text x="610" y="846" class="cap">finance's "books closed through" line; no row means nothing is locked</text>
+
+  <!-- ===================== task ===================== -->
+  <g transform="translate(1180,330)">
+    <rect width="400" height="172" rx="5" class="box"/>
+    <path d="M0,5 a5,5 0 0,1 5,-5 h390 a5,5 0 0,1 5,5 v27 h-400 z" class="head"/>
+    <text x="12" y="21" class="tname">task</text>
+    <rect x="8" y="40" width="26" height="15" rx="3" class="pk"/><text x="21" y="51" class="badge" text-anchor="middle">PK</text>
+    <text x="64" y="51" class="col">id</text><text x="168" y="51" class="type">bigint</text>
+    <rect x="0" y="58" width="400" height="22" class="stripe"/>
+    <rect x="8" y="62" width="22" height="15" rx="3" class="fk"/><text x="19" y="73" class="badge" text-anchor="middle">FK</text>
+    <text x="64" y="73" class="col">project_id</text><text x="168" y="73" class="type">bigint</text><text x="392" y="73" class="note" text-anchor="end">→ project</text>
+    <text x="64" y="95" class="col">name</text><text x="168" y="95" class="type">varchar(100)</text><text x="392" y="95" class="note" text-anchor="end">"General" if default</text>
+    <rect x="0" y="102" width="400" height="22" class="stripe"/>
+    <text x="64" y="117" class="col">billable</text><text x="168" y="117" class="type">boolean</text>
+    <text x="64" y="139" class="col">active</text><text x="168" y="139" class="type">boolean</text><text x="392" y="139" class="note" text-anchor="end">archived, never deleted</text>
+    <rect x="0" y="146" width="400" height="22" class="stripe"/>
+    <text x="64" y="161" class="col">is_default</text><text x="168" y="161" class="type">boolean</text><text x="392" y="161" class="note" text-anchor="end">log against the project itself</text>
+  </g>
+  <text x="1180" y="520" class="cap">unique (project_id, name) · at most one default task per project</text>
+
+  <!-- ===================== project ===================== -->
+  <g transform="translate(1180,650)">
+    <rect width="400" height="150" rx="5" class="box"/>
+    <path d="M0,5 a5,5 0 0,1 5,-5 h390 a5,5 0 0,1 5,5 v27 h-400 z" class="head"/>
+    <text x="12" y="21" class="tname">project</text>
+    <rect x="8" y="40" width="26" height="15" rx="3" class="pk"/><text x="21" y="51" class="badge" text-anchor="middle">PK</text>
+    <text x="64" y="51" class="col">id</text><text x="168" y="51" class="type">bigint</text>
+    <rect x="0" y="58" width="400" height="22" class="stripe"/>
+    <rect x="8" y="62" width="26" height="15" rx="3" class="uq"/><text x="21" y="73" class="badge" text-anchor="middle">UQ</text>
+    <text x="64" y="73" class="col">code</text><text x="168" y="73" class="type">varchar(20)</text><text x="392" y="73" class="note" text-anchor="end">e.g. CTG-01</text>
+    <text x="64" y="95" class="col">name</text><text x="168" y="95" class="type">varchar(100)</text>
+    <rect x="0" y="102" width="400" height="22" class="stripe"/>
+    <text x="64" y="117" class="col">client</text><text x="168" y="117" class="type">varchar(100)</text><text x="392" y="117" class="note" text-anchor="end">heading in the picker</text>
+    <text x="64" y="139" class="col">active</text><text x="168" y="139" class="type">boolean</text><text x="392" y="139" class="note" text-anchor="end">archived, never deleted</text>
+  </g>
+
+  <!-- ===================== legend ===================== -->
+  <g transform="translate(1110,870)" font-size="12" fill="#1f2937">
+    <path class="rel" d="M0,8 H40" marker-end="url(#one)"/><text x="48" y="12">exactly one</text>
+    <path class="rel" d="M130,8 H170" marker-end="url(#many)"/><text x="178" y="12">many</text>
+    <path class="rel" d="M230,8 H270" marker-end="url(#zeroOne)"/><text x="278" y="12">zero or one</text>
+    <rect x="370" y="0" width="26" height="15" rx="3" class="pk"/><text x="383" y="11" class="badge" text-anchor="middle">PK</text>
+    <rect x="400" y="0" width="22" height="15" rx="3" class="fk"/><text x="411" y="11" class="badge" text-anchor="middle">FK</text>
+    <rect x="426" y="0" width="26" height="15" rx="3" class="uq"/><text x="439" y="11" class="badge" text-anchor="middle">UQ</text>
+  </g>
+  <text x="20" y="900" font-size="11" fill="#5b6b80">Not shown: flyway_schema_history (Flyway's own bookkeeping). All foreign keys are NOT NULL.</text>
+</svg>
