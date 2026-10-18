@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import com.aryehgolob.timesheet.shared.InvalidInputException;
+
 class TimeInputTest {
 
     @ParameterizedTest(name = "\"{0}\" -> {1} min")

@@ -15,9 +15,17 @@
             </nav>
         </div>
         <div class="week-status">
-            <span th:if="${view.submitted()}" class="badge ok">Submitted</span>
+            <span th:if="${view.submitted()}" class="badge ok"
+                  th:title="'Submitted ' + ${@fmt.moment(view.submittedAt())}">Submitted</span>
             <span th:unless="${view.submitted()}" class="badge">Draft</span>
             <strong class="week-total" th:text="${@fmt.total(view.total())}">38:30</strong>
+            <form th:if="${view.canSubmit()}" th:action="@{/weeks/{d}/submit(d=${weekStart})}" method="post"
+                  th:attr="data-confirm=${view.total() == 0} ? 'Submit a week with no time logged?' : null">
+                <button type="submit" class="primary">Submit week</button>
+            </form>
+            <form th:if="${view.canReopen()}" th:action="@{/weeks/{d}/reopen(d=${weekStart})}" method="post">
+                <button type="submit">Reopen</button>
+            </form>
         </div>
     </div>
 
@@ -48,7 +56,10 @@
         <button type="submit" class="primary">Add</button>
     </form>
     <p th:unless="${view.canEditAnyDay()}" class="alert">
-        <span th:if="${view.submitted()}">This week is submitted and read-only.</span>
+        <span th:if="${view.submitted()}">
+            This week is submitted and read-only<span th:text="' (' + ${@fmt.moment(view.submittedAt())} + ')'"></span>.
+            <span th:if="${view.canReopen()}">Reopen it to make changes.</span>
+        </span>
         <span th:unless="${view.submitted()}">This week is closed by finance.</span>
     </p>
 

@@ -13,6 +13,7 @@
     <nav>
         <a th:href="@{/}">My week</a>
         <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/weeks}">Team weeks</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/period}">Close period</a>
     </nav>
     <form class="signout" th:action="@{/logout}" method="post">
         <span class="muted" sec:authentication="principal.displayName">Name</span>

@@ -53,6 +53,24 @@ Entries are really deleted, and every create, update and delete writes an `audit
 - An edit that changes nothing writes nothing.
 - **Cut:** a UI for browsing the log. The data is there, and it's one query away.
 
+### Submitting a week, and why there's no approval step
+
+A week is a **draft** until you press *Submit week*, and then it's read-only. You can **reopen** your own week to fix something, and an admin can send anyone's week back. Both are audited, and the submit record keeps the week's total at that moment.
+
+I pushed back on adding a manager approval workflow. The spec doesn't ask for one, and for 40 people it adds a state machine, a reviewer role and a queue that someone must clear every Friday. The control finance actually needs is "these numbers can't change any more", and that's the period lock. Submission means "I'm done"; the lock means "the books are closed."
+
+- **Storage:** a week is submitted if it has a row in `week_submission`. Reopening deletes the row. There's no status column that can drift out of sync.
+- **Submitting an empty week is allowed** (holiday, sick week), after a confirm.
+
+### Locking periods: a single "closed through" date
+
+Finance closes the books by setting one date. Nothing dated on or before it can change, for anyone, admins included. That covers entries, submits and reopens.
+
+- **Why one date instead of per-week or per-month flags?** Closing is always "everything up to here." A single watermark (one row, `id = 1` enforced by a check constraint) can't have holes and is trivial to reason about.
+- **A week that straddles the line** (say the month ends on a Wednesday) stays editable on the open days. Submit and reopen are blocked only when the whole week is locked.
+- **Mistakes happen:** an admin can move the line back or remove it, and that's audited with the before and after dates. You can't lock days that haven't happened yet.
+- **Admin-only twice:** `/admin/**` is restricted by URL, *and* [`PeriodLockService`](src/main/java/com/aryehgolob/timesheet/period/PeriodLockService.java) checks the role itself, so a future endpoint that forgets can't open a hole.
+
 ### The week page
 
 Entries are the source of truth; the grid (task × day) is a read-only rollup. Entry is keyboard-first:

@@ -6,6 +6,8 @@ import java.time.LocalTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.aryehgolob.timesheet.shared.InvalidInputException;
+
 /**
  * What a user typed into a time cell, understood exactly. Never rounds.
  *

@@ -1,6 +1,6 @@
 package com.aryehgolob.timesheet.tracking;
 
-import com.aryehgolob.timesheet.tracking.domain.InvalidInputException;
+import com.aryehgolob.timesheet.shared.InvalidInputException;
 
 /** The entry changed after the user opened it (another tab, another device). */
 public class StaleEntryException extends InvalidInputException {

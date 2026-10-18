@@ -17,9 +17,9 @@ import org.springframework.transaction.IllegalTransactionStateException;
 import com.aryehgolob.timesheet.audit.AuditLog;
 import com.aryehgolob.timesheet.identity.Actor;
 import com.aryehgolob.timesheet.identity.CurrentUser;
+import com.aryehgolob.timesheet.shared.InvalidInputException;
 import com.aryehgolob.timesheet.support.IntegrationTest;
 import com.aryehgolob.timesheet.tracking.domain.Decision.Denial;
-import com.aryehgolob.timesheet.tracking.domain.InvalidInputException;
 import com.aryehgolob.timesheet.tracking.domain.NotAllowedException;
 
 /** The write path end to end against real Postgres: rules, constraints, audit. */

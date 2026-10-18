@@ -1,5 +1,7 @@
 package com.aryehgolob.timesheet.shared.web;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -15,6 +17,13 @@ public class Formats {
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH);
     private static final DateTimeFormatter SHORT_DAY = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
     private static final DateTimeFormatter LONG_DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter MOMENT = DateTimeFormatter.ofPattern("EEE d MMM, HH:mm", Locale.ENGLISH);
+
+    private final Clock clock;
+
+    Formats(Clock clock) {
+        this.clock = clock;
+    }
 
     public String minutes(int minutes) {
         return minutes == 0 ? "" : TimeInput.format(minutes);
@@ -34,5 +43,10 @@ public class Formats {
 
     public String date(LocalDate date) {
         return LONG_DATE.format(date);
+    }
+
+    /** A point in time, shown in the office time zone. */
+    public String moment(Instant instant) {
+        return MOMENT.format(instant.atZone(clock.getZone()));
     }
 }

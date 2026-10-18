@@ -64,8 +64,13 @@ public class WeekQueries {
                 .filter(day -> EditPolicy.canChangeEntry(actor, ownerId, day, submittedAt != null, lock).isAllowed())
                 .collect(Collectors.toUnmodifiableSet());
 
+        boolean submitted = submittedAt != null;
+        boolean canSubmit = EditPolicy.canSubmit(actor, ownerId, week, submitted, lock).isAllowed();
+        boolean canReopen = EditPolicy.canReopen(actor, ownerId, week, submitted, lock).isAllowed();
+
         return new WeekView(ownerId, ownerName, week, rows(lines, week), dayTotals(lines, week),
-                lines.stream().mapToInt(EntryLine::minutes).sum(), byDay(lines, week), submittedAt, lock, editable);
+                lines.stream().mapToInt(EntryLine::minutes).sum(), byDay(lines, week), submittedAt, lock, editable,
+                canSubmit, canReopen);
     }
 
     private static List<TaskRow> rows(List<EntryLine> lines, WorkWeek week) {

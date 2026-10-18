@@ -11,9 +11,9 @@ import com.aryehgolob.timesheet.audit.AuditLog;
 import com.aryehgolob.timesheet.catalog.Catalog;
 import com.aryehgolob.timesheet.identity.Actor;
 import com.aryehgolob.timesheet.period.PeriodLocks;
+import com.aryehgolob.timesheet.shared.InvalidInputException;
 import com.aryehgolob.timesheet.tracking.domain.DailyLimit;
 import com.aryehgolob.timesheet.tracking.domain.EditPolicy;
-import com.aryehgolob.timesheet.tracking.domain.InvalidInputException;
 import com.aryehgolob.timesheet.tracking.domain.TimeInput;
 import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Close period')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="page narrow-page">
+    <h1>Close the books</h1>
+
+    <p th:if="${error}" class="alert error" role="alert" th:text="${error}">Error</p>
+
+    <section class="card stack">
+        <p th:if="${lock.lockedThrough() == null}">Nothing is locked. Everyone can change any day that isn't in a submitted week.</p>
+        <p th:unless="${lock.lockedThrough() == null}">
+            Locked through <strong th:text="${@fmt.date(lock.lockedThrough())}">30 Sep 2026</strong>.
+            Nobody, admins included, can change time on or before that day.
+        </p>
+
+        <form th:action="@{/admin/period}" method="post" class="inline-form">
+            <label>Lock everything through
+                <input type="date" name="through" required th:max="${today}"
+                       th:value="${lock.lockedThrough() != null and lock.lockedThrough().isAfter(suggested)} ? ${lock.lockedThrough()} : ${suggested}">
+            </label>
+            <button type="submit" class="primary">Lock</button>
+        </form>
+
+        <form th:unless="${lock.lockedThrough() == null}" th:action="@{/admin/period/unlock}" method="post"
+              data-confirm="Remove the lock? Every past day becomes editable again.">
+            <button type="submit" class="danger">Remove lock</button>
+        </form>
+    </section>
+
+    <p class="muted small">Moving the line back or removing it is allowed for mistakes, and every change is in the audit log.</p>
+</main>
+</body>
+</html>

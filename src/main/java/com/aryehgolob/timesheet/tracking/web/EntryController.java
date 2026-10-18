@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.aryehgolob.timesheet.identity.CurrentUser;
+import com.aryehgolob.timesheet.shared.InvalidInputException;
 import com.aryehgolob.timesheet.tracking.StaleEntryException;
 import com.aryehgolob.timesheet.tracking.TimesheetService;
-import com.aryehgolob.timesheet.tracking.domain.InvalidInputException;
 import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 
 /**

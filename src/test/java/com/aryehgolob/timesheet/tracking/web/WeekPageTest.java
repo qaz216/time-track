@@ -102,6 +102,20 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void submitButtonSubmitsTheWeekAndOffersReopen() throws Exception {
+        CurrentUser sam = data.user();
+        timesheets.addEntry(sam.asActor(), data.task(), WEDNESDAY, "1:00", null);
+
+        mvc.perform(post("/weeks/{day}/submit", WEDNESDAY).with(user(sam)).with(csrf()))
+                .andExpect(redirectedUrl("/?week=2026-10-12"));
+
+        mvc.perform(get("/").param("week", "2026-10-12").with(user(sam)))
+                .andExpect(content().string(containsString(">Submitted<")))
+                .andExpect(content().string(containsString(">Reopen<")))
+                .andExpect(content().string(not(containsString(">Submit week<"))));
+    }
+
+    @Test
     void editModeShowsTheEntryAsTyped() throws Exception {
         CurrentUser sam = data.user();
         long id = timesheets.addEntry(sam.asActor(), data.task(), WEDNESDAY, "23:10-24:00", null);

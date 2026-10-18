@@ -16,6 +16,7 @@ import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
  * read-only rollup; entries are the source of truth.
  *
  * @param editableDays days the viewer may change, decided by EditPolicy
+ * @param canSubmit    whether the viewer may submit this week (EditPolicy again)
  * @param submittedAt  null while the week is a draft
  */
 public record WeekView(
@@ -28,7 +29,9 @@ public record WeekView(
         Map<LocalDate, List<EntryLine>> entriesByDay,
         Instant submittedAt,
         PeriodLock lock,
-        Set<LocalDate> editableDays) {
+        Set<LocalDate> editableDays,
+        boolean canSubmit,
+        boolean canReopen) {
 
     public record TaskRow(String label, List<Integer> minutesPerDay, int total) {
     }
