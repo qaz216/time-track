@@ -127,6 +127,22 @@ Admins get a **Team weeks** page: everyone's hours, week by week, on one screen.
 - **Pick a range** with *From* / *To* and click **Show**. Ranges widen to whole weeks (Monday to Sunday).
 - The **Total** row and column give hours per week and per person.
 
+### Click any week to see the detail
+
+Every number in the grid is a link. Click one, for example Sam's submitted **33:05:00 ✓** for the week of 28 Sep:
+
+![A Team weeks cell, Sam Rivera's 33:05:00 for 28 Sep, highlighted as it's clicked](docs/team-click.png)
+
+That opens the person's whole week: the same summary grid and day-by-day entries they see, with their name in the title. Here, Sam logged 15 entries across 11 tasks:
+
+![Sam Rivera · Week of 28 Sep 2026: a Submitted badge, the 33:05:00 total and a Reopen button, a grid of eleven Project › Task rows by day, then a card for each day with every entry's note, task, times and duration](docs/admin-week.png)
+
+- **The badge** shows the week's status. Here it's *Submitted*, so the entries are read-only (no Edit or Delete).
+- **Reopen** sends a submitted week back to draft, so the person can fix a mistake and submit again. Both submitting and reopening are recorded in the audit trail.
+- **← Previous / Next →** step through the same person's weeks. **← Team weeks** goes back to the grid.
+
+### Export
+
 **Export CSV** downloads the same range with one row per person, week and task, ready for payroll or invoicing:
 
 ```
