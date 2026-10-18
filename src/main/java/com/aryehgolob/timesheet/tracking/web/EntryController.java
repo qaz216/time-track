@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.aryehgolob.timesheet.identity.CurrentUser;
 import com.aryehgolob.timesheet.shared.InvalidInputException;
 import com.aryehgolob.timesheet.tracking.StaleEntryException;
+import com.aryehgolob.timesheet.tracking.TimerService;
 import com.aryehgolob.timesheet.tracking.TimesheetService;
 import com.aryehgolob.timesheet.tracking.domain.NotAllowedException;
 import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
@@ -29,15 +30,20 @@ import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 class EntryController {
 
     private final TimesheetService timesheets;
+    private final TimerService timers;
 
-    EntryController(TimesheetService timesheets) {
+    EntryController(TimesheetService timesheets, TimerService timers) {
         this.timesheets = timesheets;
+        this.timers = timers;
     }
 
     /**
      * Every field is optional at the HTTP level so a half-filled bar comes back
      * with a message, not a 400. A day that turns out to be locked or submitted
      * (the date box allows any day of the week) is a message too.
+     *
+     * <p>Add with the time left empty means "I'm starting this now": it starts a
+     * timer from the current time, like pressing Start.
      */
     @PostMapping
     String add(@AuthenticationPrincipal CurrentUser user,
@@ -48,7 +54,22 @@ class EntryController {
             @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate week,
             RedirectAttributes redirect) {
         LocalDate day = date != null ? date : (week != null ? week : LocalDate.now());
-        String problem = taskId == null ? "Pick a project." : date == null ? "Pick a day." : null;
+        String problem = taskId == null ? "Pick a project." : null;
+        if (problem == null && time.isBlank()) {
+            try {
+                boolean switching = timers.running(user.asActor()).isPresent();
+                timers.start(user.asActor(), taskId, note);
+                redirect.addFlashAttribute("notice", switching
+                        ? "Logged your previous timer and started a new one from now."
+                        : "No time given, so a timer started from now. Stop it when you're done.");
+                return "redirect:/";
+            } catch (InvalidInputException | NotAllowedException e) {
+                problem = e.getMessage();
+            }
+        }
+        if (problem == null && date == null) {
+            problem = "Pick a day.";
+        }
         if (problem == null) {
             try {
                 timesheets.addEntry(user.asActor(), taskId, date, time, note);

@@ -97,6 +97,47 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void addWithNoTimeStartsATimerFromNowInsteadOfLoggingAnything() throws Exception {
+        CurrentUser sam = data.user();
+
+        mvc.perform(post("/entries").with(user(sam)).with(csrf())
+                        .param("taskId", String.valueOf(data.task())).param("note", "Client call")
+                        .param("date", WEDNESDAY.toString()).param("time", "  "))
+                .andExpect(redirectedUrl("/"))
+                .andExpect(flash().attribute("notice", containsString("timer started")));
+
+        assertThat(data.hasTimer(sam.id())).isTrue();
+        assertThat(data.entryCount(sam.id())).isZero();
+        mvc.perform(get("/").with(user(sam)))
+                .andExpect(content().string(containsString("Client call")))
+                .andExpect(content().string(containsString("data-running=\"true\"")));
+    }
+
+    @Test
+    void addWithNoTimeWhileATimerRunsLogsTheOldOneAndStartsAgain() throws Exception {
+        CurrentUser sam = data.user();
+        long task = data.task();
+        data.timerStartedAt(sam.id(), task, java.time.Instant.now().minusSeconds(45 * 60));
+
+        mvc.perform(post("/entries").with(user(sam)).with(csrf())
+                        .param("taskId", String.valueOf(task)).param("time", ""))
+                .andExpect(flash().attribute("notice", containsString("previous timer")));
+
+        assertThat(data.entryCount(sam.id())).isEqualTo(1);
+        assertThat(data.hasTimer(sam.id())).isTrue();
+    }
+
+    @Test
+    void addWithNoTimeStillNeedsAProject() throws Exception {
+        CurrentUser sam = data.user();
+
+        mvc.perform(post("/entries").with(user(sam)).with(csrf()).param("time", ""))
+                .andExpect(flash().attribute("error", "Pick a project."));
+
+        assertThat(data.hasTimer(sam.id())).isFalse();
+    }
+
+    @Test
     void addingToASubmittedDayIsAMessageNotAnErrorPage() throws Exception {
         CurrentUser sam = data.user();
         data.submit(sam.id(), LocalDate.of(2026, 10, 12));

@@ -82,7 +82,8 @@
             </select>
         </div>
 
-        <input class="eb-time manual-only" name="time" placeholder="1:30 or 9:00-10:30" aria-label="Time"
+        <input class="eb-time manual-only" name="time" placeholder="1:30 · 9:00-10:30 · empty = start now"
+               aria-label="Time (leave empty to start a timer now)" title="Leave empty to start a timer from now"
                th:value="${form.time()}">
         <input class="eb-date manual-only" type="date" name="date" aria-label="Date" th:value="${form.date()}"
                th:min="${weekStart}" th:max="${view.week().end()}">

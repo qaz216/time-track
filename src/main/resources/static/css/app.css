@@ -163,7 +163,7 @@ a.button.primary { background: var(--accent); border-color: var(--accent); color
 .eb-running-project { color: var(--accent); }
 .eb-project, .eb-time, .eb-date, .eb-clock { border-left: 1px dotted var(--border); padding: 0 0.9rem; }
 .eb-project select { border: 0; background: transparent; color: var(--accent); max-width: 16rem; }
-.eb-time { width: 11rem; text-align: center; font-variant-numeric: tabular-nums; }
+.eb-time { width: 15rem; text-align: center; font-variant-numeric: tabular-nums; }
 .eb-date { width: 9.5rem; color: var(--text); }
 .eb-clock { min-width: 7.5rem; justify-content: center; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
 .eb-go { margin: 0.55rem; padding: 0 1.6rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; font-size: 0.85rem; }
