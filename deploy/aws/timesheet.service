@@ -1,0 +1,16 @@
+[Unit]
+Description=Time Track Application (Docker Compose stack)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/timesheet
+ExecStart=/opt/timesheet/deploy/aws/start.sh
+ExecStop=/usr/bin/docker compose -f compose.yaml -f compose.prod.yaml down
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=multi-user.target

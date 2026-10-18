@@ -22,6 +22,8 @@ docker compose up --build
 
 Then open **http://localhost:8080** and sign in.
 
+**On AWS:** a single EC2 instance runs the same stack behind Caddy, with free HTTPS. See [deploy/aws/README.md](deploy/aws/README.md).
+
 ## Sign in
 
 <table>

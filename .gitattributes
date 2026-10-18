@@ -3,3 +3,6 @@
 /mvnw text eol=lf
 *.sh text eol=lf
 *.cmd text eol=crlf
+# Server files for the AWS deploy run on Linux.
+*.service text eol=lf
+Caddyfile text eol=lf
