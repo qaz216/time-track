@@ -27,3 +27,48 @@ Open **http://localhost:8080** and sign in.
     </td>
   </tr>
 </table>
+
+## Add vs Start: two ways to log time
+
+The entry bar at the top of **My week** has two modes. Both use the same description and project; they differ in *when* the time is recorded.
+
+### Switch between them
+
+The two small icons at the right end of the bar switch modes. The highlighted one is the mode you're in, and the app remembers your choice in this browser.
+
+<table>
+  <tr>
+    <td align="center" width="90"><img src="docs/icons-timer.png" alt="Clock icon highlighted" width="38"></td>
+    <td><b>Clock icon → Timer mode.</b> The button becomes <b>START</b>.</td>
+  </tr>
+  <tr>
+    <td align="center" width="90"><img src="docs/icons-manual.png" alt="List icon highlighted" width="38"></td>
+    <td><b>List icon → Manual mode.</b> The button becomes <b>ADD</b>.</td>
+  </tr>
+</table>
+
+### START: time it as you go
+
+![Entry bar in timer mode: description, Project, a 00:00:00 clock and a START button](docs/bar-timer.png)
+
+- Type what you're working on, pick a project, and click **START** (or press <kbd>t</kbd>).
+- The clock counts up, in the bar and in the page header. Click **STOP** when you're done.
+- The entry is logged to the exact second. A timer left running past midnight is split into one entry per day.
+
+### ADD: log time that already happened
+
+![Entry bar in manual mode: description, Project, start and end times, a date, a duration and an ADD button](docs/bar-manual.png)
+
+- Fill in the start and end times (or just a duration, like `1:30`) and the day, then click **ADD**.
+- The entry is saved straight away. The project and day stay filled in, ready for the next one.
+- Times are forgiving: `9`, `915`, `1:15 PM` and `1715` all work.
+
+> [!TIP]
+> **ADD with no time behaves like START.** The start and end times default to *now*. If you click **ADD** while they're still equal and there's no duration, nothing is logged yet. A timer starts from now instead, exactly as if you'd clicked **START**.
+
+<details>
+<summary>Side-by-side diagram</summary>
+
+![Manual (ADD) and Timer (START/STOP) compared](docs/entry-modes.png)
+
+</details>
