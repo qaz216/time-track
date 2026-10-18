@@ -15,19 +15,21 @@ Internet ──443/80──▶ Caddy (HTTPS) ──▶ app (Spring Boot, :8080) 
 | Address | `https://<public-ip-with-dashes>.sslip.io`: a free hostname with a real Let's Encrypt certificate |
 | Sign in | `demo` / `demo` (admin), plus the sample team. The demo data is seeded on first start |
 
-## 0. Create a read-only GitHub token (the repository is private)
+## 0. Where the server gets the code
 
-The server clones the code from GitHub, and this repository is private, so it needs a token that
-can only **read** this one repository.
+The server clones the public copy at **[github.com/qaz216/time-track](https://github.com/qaz216/time-track)**,
+so no token is needed. Push there whenever you want the server to pick up a change.
 
-1. GitHub → your picture → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
-2. **Token name:** `timesheet-ec2`. **Expiration:** 7 days is plenty.
-3. **Resource owner:** `ctgready`. **Repository access:** *Only select repositories* → `ready-cnd-aryehgolob`.
-4. **Permissions → Repository permissions → Contents: Read-only.** Nothing else.
-5. **Generate token** and copy it (it starts with `github_pat_`).
+<details>
+<summary>Cloning a private repository instead</summary>
 
-If the `ctgready` organization doesn't allow tokens, or the token needs an approval you can't get,
-use [Plan B](#plan-b-copy-the-code-from-your-pc) instead.
+Set `REPO` in `user-data.sh` to the private repository and `GITHUB_TOKEN` to a read-only token:
+GitHub → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**,
+*Only select repositories* → that repository, **Contents: Read-only**, a short expiry. The token is used
+once for the clone and not kept in the repository config. If you can't get a token, use
+[Plan B](#plan-b-copy-the-code-from-your-pc).
+
+</details>
 
 ## 1. Launch the instance (AWS console, ~5 minutes)
 
@@ -47,8 +49,7 @@ use [Plan B](#plan-b-copy-the-code-from-your-pc) instead.
 8. **Advanced details:**
    - **Metadata version:** *V2 only (token required)*
    - **Metadata response hop limit:** **1**, so containers can't reach the instance metadata.
-   - **User data:** paste the whole of [`user-data.sh`](user-data.sh), then put your token between the
-     quotes on the `GITHUB_TOKEN=""` line.
+   - **User data:** paste the whole of [`user-data.sh`](user-data.sh). It works as-is.
 9. **Launch instance.**
 
 ## 2. Wait for it (~10 minutes) and open it
@@ -74,10 +75,10 @@ cat /opt/timesheet/SITE_URL
   **Start** it again later; the stack comes back by itself, with its data. The public IP changes after a
   stop, so look up the new address (same rule: `https://<new-ip-with-dashes>.sslip.io`). For a fixed
   address, attach an **Elastic IP** (small hourly charge while allocated).
-- **Deploy a new version** after pushing to GitHub (the token isn't stored on the server, so pass it again):
+- **Deploy a new version** after pushing to `qaz216/time-track`:
 
   ```bash
-  cd /opt/timesheet && sudo git pull "https://x-access-token:YOUR-TOKEN@github.com/ctgready/ready-cnd-aryehgolob.git" main && sudo systemctl restart timesheet
+  cd /opt/timesheet && sudo git pull && sudo systemctl restart timesheet
   ```
 
 - **Logs** of the app:
@@ -97,7 +98,7 @@ cat /opt/timesheet/SITE_URL
 
 ## Plan B: copy the code from your PC
 
-If you can't use a GitHub token, launch the instance exactly as in step 1 but **leave User data empty**
+If the server can't clone from GitHub, launch the instance exactly as in step 1 but **leave User data empty**
 and **pick your key pair**. Then, from the project folder on your PC (PowerShell or WSL), replacing
 `3.91.12.34` with the instance's public IP:
 
@@ -127,9 +128,13 @@ ssh -i C:/dev/git/aryeh-ec2-key.pem ubuntu@3.91.12.34 "sudo tar -xzf timesheet.t
 
 ## Troubleshooting
 
-**The setup log stops at `git clone` with "Authentication failed" or "not found".** The token is
-missing, mistyped, expired, or lacks *Contents: Read-only* on this repository. Terminate the instance
-and launch a new one with a fixed token, or use Plan B on this one.
+**The setup log stops at `git clone` with "could not read Username" or "not found".** The repository in
+`REPO` is private or misspelled. Fix it (or add a token, see step 0), then on the server clone by hand and
+rerun the setup, which skips the clone once the code is there:
+
+```bash
+sudo git clone --depth 1 https://github.com/qaz216/time-track.git /opt/timesheet && sudo bash /var/lib/cloud/instance/scripts/part-001
+```
 
 **"Refused to connect" in the browser, and `timesheet.service failed` in the setup log.** Look at the cause:
 
@@ -148,15 +153,15 @@ certificate is issued for it. Right after the first start, give Caddy about 30 s
 ## 4. Tear down
 
 **EC2 → Instances → Terminate.** That deletes the instance, its disk and all the data. If you created
-an Elastic IP, release it too (EC2 → Elastic IPs), delete the security group, and delete the GitHub token.
+an Elastic IP, release it too (EC2 → Elastic IPs), and delete the security group (and any GitHub token you made).
 
 ## What's protected
 
 - **Only Caddy is exposed** (80/443). Postgres and the app publish no ports (`compose.prod.yaml`).
 - **HTTPS everywhere**, with HSTS. The app trusts Caddy's forwarded headers and marks the session cookie *Secure*.
 - **A random database password**, generated on first boot into `/opt/timesheet/.env` (mode 600).
-- **The GitHub token is used once and not kept in the repository config.** It's still visible in the
-  instance's user data to anyone with AWS console access to the instance, so give it a short expiry,
-  read-only access to one repository, and delete it when you're done.
+- **No credentials on the server for the code**: it clones a public repository. If you use a token for a
+  private one, it is used once and not kept in the repository config, but stays visible in the instance's
+  user data, so give it a short expiry and read-only access to one repository.
 - **Demo sign-ins are public knowledge** (demo / demo). For a demo only you and your reviewers can
   reach, limit the security group's HTTP/HTTPS rules to those IP addresses.

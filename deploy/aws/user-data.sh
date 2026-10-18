@@ -4,11 +4,10 @@
 # Setup log on the instance: /var/log/timesheet-setup.log   (see deploy/aws/README.md)
 
 # ─────────── Settings ───────────
-# The repository is private, so the server needs a read-only GitHub token to clone it:
-# a fine-grained token with "Contents: Read-only" on this one repository (see the README).
-# Leave it empty only if the repository is public.
+# The server clones the public copy of the code; no token needed. To clone a private
+# repository instead, point REPO at it and set a read-only GitHub token (see the README).
+REPO="github.com/qaz216/time-track.git"
 GITHUB_TOKEN=""
-REPO="github.com/ctgready/ready-cnd-aryehgolob.git"
 # ────────────────────────────────
 
 APP_DIR="/opt/timesheet"
