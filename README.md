@@ -8,7 +8,7 @@ A small timesheet app for a 40-person consultancy that bills by the hour.
 docker compose up --build
 ```
 
-Then open http://localhost:8080 and sign in with a demo account (password `demo1234`):
+Then open http://localhost:8080 (port taken? `APP_PORT=8090 docker compose up --build`) and sign in with a demo account (password `demo1234`):
 
 | Email | Role |
 |---|---|

@@ -6,8 +6,8 @@ services:
       POSTGRES_DB: timesheet
       POSTGRES_USER: timesheet
       POSTGRES_PASSWORD: timesheet
-    ports:
-      - "5432:5432"
+    # no host port: the app reaches it on the compose network, so a local
+    # Postgres on 5432 can't clash
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -27,7 +27,7 @@ services:
       DB_PASSWORD: timesheet
       SPRING_PROFILES_ACTIVE: dev
     ports:
-      - "8080:8080"
+      - "${APP_PORT:-8080}:8080"   # APP_PORT=8090 docker compose up if 8080 is taken
 
 volumes:
   db-data:
