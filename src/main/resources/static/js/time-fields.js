@@ -76,7 +76,6 @@
         const end = form.elements.end;
         const duration = form.elements.duration;
         if (!start || !end || !duration) return;
-        const button = form.querySelector('[data-when-empty]');
 
         const read = () => {
             const s = parseClock(start.value);
@@ -125,17 +124,6 @@
             });
         });
 
-        // "No time given" (start = end, no duration) starts a timer, so say so on the button.
-        const noTimeGiven = () => {
-            const {s, e, d} = read();
-            return (s === e || (!start.value.trim() && !end.value.trim())) && !d;
-        };
-        const relabel = () => {
-            if (button) button.textContent = noTimeGiven() ? button.dataset.whenEmpty : button.dataset.whenFilled;
-        };
-        [start, end, duration].forEach((input) => input.addEventListener('input', relabel));
-        form.addEventListener('change', relabel);
-
         // The entry bar opens on the current time, start = end, like Clockify, and keeps
         // up with the clock until you touch either box. (Edit rows keep the entry's times.)
         if (form.id === 'quick-add' && !start.value.trim() && !end.value.trim()) {
@@ -145,12 +133,10 @@
                 if (touched || [start, end].includes(document.activeElement)) return;
                 const now = new Date();
                 start.value = end.value = formatClock(now.getHours() * 3600 + now.getMinutes() * 60);
-                relabel();
             };
             toNow();
             setInterval(toNow, 15000);
         }
-        relabel();
     }
 
     document.querySelectorAll('#quick-add, form.edit-entry').forEach(wire);
