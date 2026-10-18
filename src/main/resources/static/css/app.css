@@ -224,3 +224,7 @@ button.stop { background: var(--danger); border-color: var(--danger); color: #ff
 .day h2 > span:first-child { flex: 1; }
 .day-total { font-variant-numeric: tabular-nums; }
 .entries .task { display: flex; align-items: center; gap: 0.45rem; }
+
+/* sign-in */
+.demo-hint { margin: 1rem 0 0; text-align: center; font-size: 0.8rem; color: var(--muted); }
+.demo-hint strong { font-weight: 600; color: var(--text); }

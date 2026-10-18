@@ -16,6 +16,8 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** What people sign in with, e.g. "demo". Stored lower-case. */
+    private String username;
     private String email;
     private String displayName;
     private String passwordHash;
@@ -28,7 +30,8 @@ public class AppUser {
     protected AppUser() {
     }
 
-    public AppUser(String email, String displayName, String passwordHash, Role role) {
+    public AppUser(String username, String email, String displayName, String passwordHash, Role role) {
+        this.username = username.trim().toLowerCase();
         this.email = email.trim().toLowerCase();
         this.displayName = displayName;
         this.passwordHash = passwordHash;
@@ -43,6 +46,10 @@ public class AppUser {
 
     public Long getId() {
         return id;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getEmail() {

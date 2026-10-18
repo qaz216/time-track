@@ -47,7 +47,8 @@ public class TestData {
     }
 
     public CurrentUser inactiveUser() {
-        AppUser user = new AppUser(uniqueEmail(), "Former Employee", passwordHash, Role.USER);
+        String name = uniqueName();
+        AppUser user = new AppUser(name, name + "@test.example", "Former Employee", passwordHash, Role.USER);
         user.deactivate();
         users.save(user);
         return (CurrentUser) userDetails.loadUserByUsername(user.getEmail());
@@ -80,7 +81,8 @@ public class TestData {
     }
 
     public CurrentUser userNamed(String displayName) {
-        AppUser user = users.save(new AppUser(uniqueEmail(), displayName, passwordHash, Role.USER));
+        String name = uniqueName();
+        AppUser user = users.save(new AppUser(name, name + "@test.example", displayName, passwordHash, Role.USER));
         return (CurrentUser) userDetails.loadUserByUsername(user.getEmail());
     }
 
@@ -135,11 +137,12 @@ public class TestData {
     }
 
     private CurrentUser create(Role role) {
-        AppUser user = users.save(new AppUser(uniqueEmail(), "Test " + role, passwordHash, role));
+        String name = uniqueName();
+        AppUser user = users.save(new AppUser(name, name + "@test.example", "Test " + role, passwordHash, role));
         return (CurrentUser) userDetails.loadUserByUsername(user.getEmail());
     }
 
-    private static String uniqueEmail() {
-        return "user" + sequence.incrementAndGet() + "-" + System.nanoTime() + "@test.example";
+    private static String uniqueName() {
+        return "user" + sequence.incrementAndGet() + "-" + System.nanoTime();
     }
 }

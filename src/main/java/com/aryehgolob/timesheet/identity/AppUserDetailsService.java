@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/** Sign in with a username ("demo") or, for anyone who reaches for it, an email address. */
 @Service
 class AppUserDetailsService implements UserDetailsService {
 
@@ -15,8 +16,10 @@ class AppUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) {
-        return users.findByEmailIgnoreCase(email.trim())
+    public UserDetails loadUserByUsername(String login) {
+        String typed = login.trim();
+        return users.findByUsernameIgnoreCase(typed)
+                .or(() -> users.findByEmailIgnoreCase(typed))
                 .map(CurrentUser::from)
                 .orElseThrow(() -> new UsernameNotFoundException("Unknown user"));
     }

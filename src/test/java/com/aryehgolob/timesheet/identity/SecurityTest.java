@@ -1,5 +1,7 @@
 package com.aryehgolob.timesheet.identity;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -7,6 +9,7 @@ import static org.springframework.security.test.web.servlet.response.SecurityMoc
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,34 +27,42 @@ class SecurityTest extends IntegrationTest {
     class SigningIn {
 
         @Test
-        void withTheRightPasswordLandsOnTheWeek() throws Exception {
+        void withUsernameAndTheRightPasswordLandsOnTheWeek() throws Exception {
             CurrentUser sam = data.user();
 
-            mvc.perform(login(sam.email(), TestData.PASSWORD))
-                    .andExpect(authenticated().withUsername(sam.email()))
+            mvc.perform(login(sam.username(), TestData.PASSWORD))
+                    .andExpect(authenticated().withUsername(sam.username()))
                     .andExpect(redirectedUrl("/"));
         }
 
         @Test
-        void emailIsCaseInsensitive() throws Exception {
+        void usernameIsCaseInsensitive() throws Exception {
+            CurrentUser sam = data.user();
+
+            mvc.perform(login(sam.username().toUpperCase(), TestData.PASSWORD))
+                    .andExpect(authenticated().withUsername(sam.username()));
+        }
+
+        @Test
+        void anEmailAddressWorksTooForPeopleWhoReachForIt() throws Exception {
             CurrentUser sam = data.user();
 
             mvc.perform(login(sam.email().toUpperCase(), TestData.PASSWORD))
-                    .andExpect(authenticated());
+                    .andExpect(authenticated().withUsername(sam.username()));
         }
 
         @Test
         void withTheWrongPasswordIsRefused() throws Exception {
             CurrentUser sam = data.user();
 
-            mvc.perform(login(sam.email(), "wrong"))
+            mvc.perform(login(sam.username(), "wrong"))
                     .andExpect(unauthenticated())
                     .andExpect(redirectedUrl("/login?error"));
         }
 
         @Test
-        void unknownEmailGetsTheSameAnswerAsAWrongPassword() throws Exception {
-            mvc.perform(login("nobody@test.example", "whatever"))
+        void unknownUsernameGetsTheSameAnswerAsAWrongPassword() throws Exception {
+            mvc.perform(login("nobody", "whatever"))
                     .andExpect(unauthenticated())
                     .andExpect(redirectedUrl("/login?error"));
         }
@@ -60,12 +71,12 @@ class SecurityTest extends IntegrationTest {
         void deactivatedUserCannotSignIn() throws Exception {
             CurrentUser former = data.inactiveUser();
 
-            mvc.perform(login(former.email(), TestData.PASSWORD))
+            mvc.perform(login(former.username(), TestData.PASSWORD))
                     .andExpect(unauthenticated());
         }
 
-        private static FormLoginRequestBuilder login(String email, String password) {
-            return formLogin("/login").userParameter("email").user(email).password(password);
+        private static FormLoginRequestBuilder login(String username, String password) {
+            return formLogin("/login").user(username).password(password);
         }
     }
 
@@ -82,6 +93,14 @@ class SecurityTest extends IntegrationTest {
         void loginPageAndStylesArePublic() throws Exception {
             mvc.perform(get("/login")).andExpect(status().isOk());
             mvc.perform(get("/css/app.css")).andExpect(status().isOk());
+        }
+
+        @Test
+        void theSignInPageOnlyAdvertisesTheDemoLoginInADemoInstall() throws Exception {
+            // tests run without the dev profile, like production: no password hint on the page
+            mvc.perform(get("/login"))
+                    .andExpect(content().string(containsString("name=\"username\"")))
+                    .andExpect(content().string(not(containsString("demo-hint"))));
         }
 
         @Test

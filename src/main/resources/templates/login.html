@@ -4,17 +4,19 @@
 <body class="center">
 <main class="card narrow">
     <h1>Timesheet</h1>
-    <p th:if="${param.error}" class="alert error">Email or password is wrong.</p>
+    <p th:if="${param.error}" class="alert error">Username or password is wrong.</p>
     <p th:if="${param.logout}" class="alert">You are signed out.</p>
     <form th:action="@{/login}" method="post" class="stack">
-        <label>Email
-            <input type="email" name="email" autocomplete="username" required autofocus>
+        <label>Username
+            <input type="text" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"
+                   required autofocus>
         </label>
         <label>Password
             <input type="password" name="password" autocomplete="current-password" required>
         </label>
         <button type="submit" class="primary">Sign in</button>
     </form>
+    <p th:if="${demo}" class="demo-hint">Demo: sign in with <strong>demo</strong> / <strong>demo</strong></p>
 </main>
 </body>
 </html>

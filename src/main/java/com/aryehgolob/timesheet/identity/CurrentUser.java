@@ -11,11 +11,12 @@ import org.springframework.security.core.userdetails.UserDetails;
  * The logged-in user as the rest of the app sees it. Carries the id so services
  * can check ownership without another database lookup.
  */
-public record CurrentUser(Long id, String email, String displayName, Role role, String passwordHash, boolean active)
+public record CurrentUser(Long id, String username, String email, String displayName, Role role, String passwordHash,
+        boolean active)
         implements UserDetails {
 
     static CurrentUser from(AppUser user) {
-        return new CurrentUser(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole(),
+        return new CurrentUser(user.getId(), user.getUsername(), user.getEmail(), user.getDisplayName(), user.getRole(),
                 user.getPasswordHash(), user.isActive());
     }
 
@@ -39,7 +40,7 @@ public record CurrentUser(Long id, String email, String displayName, Role role, 
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
@@ -49,6 +50,6 @@ public record CurrentUser(Long id, String email, String displayName, Role role, 
 
     @Override
     public String toString() {
-        return "CurrentUser[id=" + id + ", email=" + email + ", role=" + role + "]";
+        return "CurrentUser[id=" + id + ", username=" + username + ", role=" + role + "]";
     }
 }

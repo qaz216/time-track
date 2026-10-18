@@ -37,7 +37,8 @@ import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 @ConditionalOnBooleanProperty("timesheet.seed-demo-data")
 class DemoDataSeeder implements ApplicationRunner {
 
-    static final String DEMO_PASSWORD = "demo1234";
+    /** Every demo account uses this password; the sign-in page says so in the dev profile. */
+    static final String DEMO_PASSWORD = "demo";
 
     /** Demo projects, grouped under the CTG heading in the project picker. */
     static final List<String> CTG_PROJECTS = List.of(
@@ -79,10 +80,11 @@ class DemoDataSeeder implements ApplicationRunner {
         if (users.count() > 0) {
             return;
         }
+        // "demo" is an admin so one sign-in shows everything: its own week, the team, the lock, the CSV.
         String hash = passwordEncoder.encode(DEMO_PASSWORD);
-        users.save(new AppUser("admin@example.com", "Avery Admin", hash, Role.ADMIN));
-        AppUser sam = users.save(new AppUser("sam@example.com", "Sam Rivera", hash, Role.USER));
-        AppUser jo = users.save(new AppUser("jo@example.com", "Jo Chen", hash, Role.USER));
+        AppUser demo = users.save(new AppUser("demo", "demo@example.com", "Demo User", hash, Role.ADMIN));
+        AppUser sam = users.save(new AppUser("sam", "sam@example.com", "Sam Rivera", hash, Role.USER));
+        AppUser jo = users.save(new AppUser("jo", "jo@example.com", "Jo Chen", hash, Role.USER));
 
         // Each project is logged against directly (its hidden default task), Clockify-style.
         Map<String, Task> task = new HashMap<>();
@@ -96,8 +98,12 @@ class DemoDataSeeder implements ApplicationRunner {
         long finance = task.get("Financial Management").getId();
         long budget = task.get("Budget Planning & Tracking").getId();
         long compliance = task.get("Compliance & Reporting").getId();
+        long contracts = task.get("Contract Administration").getId();
+        long strategy = task.get("Strategic Planning").getId();
 
-        // Two finished weeks plus this week so far. Sam submitted both; Jo forgot one.
+        // Two finished weeks plus this week so far. Sam submitted both; Jo forgot one;
+        // demo submitted the oldest, so its last week still shows a Submit button.
+        Actor demoActor = new Actor(demo.getId(), true);
         Actor samActor = new Actor(sam.getId(), false);
         Actor joActor = new Actor(jo.getId(), false);
         LocalDate today = LocalDate.now(clock);
@@ -107,6 +113,10 @@ class DemoDataSeeder implements ApplicationRunner {
                 if (!day.isBefore(today) || day.getDayOfWeek().getValue() > DayOfWeek.FRIDAY.getValue()) {
                     continue;
                 }
+                timesheets.addEntry(demoActor, projectAdmin, day, "9:00-10:30", "Sprint planning");
+                timesheets.addEntry(demoActor, contracts, day, "10:30-12:00", "Vendor contract review");
+                timesheets.addEntry(demoActor, finance, day, "13:00-15:30", "Monthly forecast");
+                timesheets.addEntry(demoActor, strategy, day, "15:30-17:00", "Q4 roadmap");
                 timesheets.addEntry(samActor, projectAdmin, day, "9:00-12:30", null);
                 timesheets.addEntry(samActor, operations, day, "12:30-13:00", "Standup");
                 timesheets.addEntry(samActor, projectAdmin, day, "13:30-17:15", null);
@@ -118,7 +128,8 @@ class DemoDataSeeder implements ApplicationRunner {
         submissions.submit(samActor, sam.getId(), thisWeek.previous().previous());
         submissions.submit(samActor, sam.getId(), thisWeek.previous());
         submissions.submit(joActor, jo.getId(), thisWeek.previous().previous());
+        submissions.submit(demoActor, demo.getId(), thisWeek.previous().previous());
 
-        log.info("Seeded demo data. Log in as admin@example.com / {}", DEMO_PASSWORD);
+        log.info("Seeded demo data. Sign in as demo / {}", DEMO_PASSWORD);
     }
 }

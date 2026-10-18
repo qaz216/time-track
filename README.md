@@ -8,15 +8,15 @@ A small timesheet app for a 40-person consultancy that bills by the hour, built 
 docker compose up --build
 ```
 
-Then open http://localhost:8080 (port taken? `APP_PORT=8090 docker compose up --build`) and sign in with a demo account (password `demo1234`):
+Then open http://localhost:8080 (port taken? `APP_PORT=8090 docker compose up --build`) and sign in with **`demo` / `demo`**. The sign-in page reminds you, but only in the demo setup.
 
-| Email | Role |
-|---|---|
-| `admin@example.com` | Admin |
-| `sam@example.com` | User |
-| `jo@example.com` | User |
+| Username | Password | Role |
+|---|---|---|
+| `demo` | `demo` | Admin, with its own time logged, so one sign-in shows everything |
+| `sam` | `demo` | User |
+| `jo` | `demo` | User |
 
-The demo data includes three weeks of time for Sam and Jo, with one of Jo's weeks left unsubmitted, so the admin view has something to show. To start fresh: `docker compose down -v`.
+The demo data includes three weeks of time for all three, with one of Jo's weeks left unsubmitted, so the admin view has something to show. To start fresh: `docker compose down -v`.
 
 Or run it with Maven alone (JDK 21 and Docker running; no Compose, no Postgres to install):
 
@@ -34,10 +34,10 @@ Run the tests (needs Docker running, for Testcontainers):
 
 ## A two-minute tour
 
-1. **Sign in as Sam.** The cursor is in "What have you worked on?". Type anything, Tab to **Project**, type `fin`, Enter, Tab, `905`, Tab, `1042` (they tidy to 9:05 AM and 10:42 AM, and the duration fills in), Enter. Add another with `1.5`: the project and day are kept. Durations show as h:mm:ss, like Clockify.
+1. **Sign in as `demo` / `demo`.** The cursor is in "What have you worked on?". Type anything, Tab to **Project**, type `fin`, Enter, Tab, `905`, Tab, `1042` (they tidy to 9:05 AM and 10:42 AM, and the duration fills in), Enter. Add another with `1.5`: the project and day are kept. Durations show as h:mm:ss, like Clockify.
 2. Click the clock icon at the right of the bar to switch to timer mode, then START (or press `t`). It ticks in the bar and in the header on every page; STOP or `t` logs it.
 3. Click **Submit week**. The week goes read-only; **Reopen** brings it back.
-4. **Sign in as the admin** and open **Team weeks**: everyone × every week, ✓ for submitted, with Jo's missing week easy to spot. Click a cell to see that week, then **Export CSV**.
+4. Open **Team weeks** (demo is an admin): everyone × every week, ✓ for submitted, with Jo's missing week easy to spot. Click a cell to see that week, then **Export CSV**.
 5. Open **Close period** and lock through last month. Now nobody, admins included, can change those days.
 
 ## Scope
@@ -205,7 +205,7 @@ The page leads with one bar, modelled on Clockify's tracker:
 
 ### Authentication: form login and server sessions
 
-Email and password, BCrypt, a session cookie, CSRF protection on every form.
+Username and password (an email address works too), BCrypt, a session cookie, CSRF protection on every form. The demo password hint only appears when the demo data is loaded (the `dev` profile), never in a real install.
 
 - **Why not JWT?** It's server-rendered, so there's no SPA or API client to hand a token to. Sessions are simpler and can be revoked.
 - **What I'd really ship:** company SSO (Google Workspace or Microsoft 365 over OIDC). A 40-person consultancy already has one, and nobody wants another password. That's a swap of `formLogin` for `oauth2Login` in [`SecurityConfig`](src/main/java/com/aryehgolob/timesheet/identity/SecurityConfig.java); the rest of the app only sees `CurrentUser` and `Actor`.
