@@ -28,6 +28,20 @@ Open **http://localhost:8080** and sign in.
   </tr>
 </table>
 
+## Log time: pick a project and task, add a note
+
+Every entry is logged against a **project** and one of its **tasks**. A note is optional.
+
+**1. Add a note (optional).** Type what you worked on in the first box, for example *Checkout API integration*. Leave it empty if the task says it all.
+
+**2. Pick a project and task.** Click **Project** to open the picker. Click a project to unfold its tasks, then choose one. Or start typing to search across every project and task (typing `dev` finds *Amazon › Development*). The arrow keys and <kbd>Enter</kbd> work too.
+
+![The project picker open: a search box, Amazon unfolded to its five tasks with Development highlighted, and CTG folded with 10 tasks](docs/picker.png)
+
+**3. You're ready.** The bar shows your choice as *Project › Task*. Now record the time with **ADD** or **START**, as explained below.
+
+![The entry bar with the note "Checkout API integration" and Amazon › Development chosen](docs/bar-chosen.png)
+
 ## Add vs Start: two ways to log time
 
 The entry bar at the top of **My week** has two modes. Both use the same description and project; they differ in *when* the time is recorded.
