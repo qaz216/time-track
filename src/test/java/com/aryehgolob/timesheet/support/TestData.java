@@ -68,6 +68,17 @@ public class TestData {
                 Long.class, projectId, taskName);
     }
 
+    /** A project you log against directly (its default task); returns the task id. */
+    public long projectTask(String projectName) {
+        int n = sequence.incrementAndGet();
+        Long projectId = jdbc.queryForObject(
+                "insert into project (code, name, client) values (?, ?, ?) returning id",
+                Long.class, "D" + n + "-" + (System.nanoTime() % 100000), projectName, "Client " + n);
+        return jdbc.queryForObject(
+                "insert into task (project_id, name, is_default) values (?, 'General', true) returning id",
+                Long.class, projectId);
+    }
+
     public CurrentUser userNamed(String displayName) {
         AppUser user = users.save(new AppUser(uniqueEmail(), displayName, passwordHash, Role.USER));
         return (CurrentUser) userDetails.loadUserByUsername(user.getEmail());

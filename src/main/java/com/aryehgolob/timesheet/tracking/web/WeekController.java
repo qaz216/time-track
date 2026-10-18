@@ -57,9 +57,9 @@ class WeekController {
         model.addAttribute("weekUrl", "/");
         model.addAttribute("reopenUrl", "/weeks/" + view.week().start() + "/reopen");
         model.addAttribute("editId", edit);
-        // grouped by project so options are task names, and type-to-select works on them
+        // grouped under client headings, like Clockify's categories
         model.addAttribute("taskGroups", catalog.activeTasks().stream()
-                .collect(Collectors.groupingBy(TaskOption::projectCode, LinkedHashMap::new, Collectors.toList())));
+                .collect(Collectors.groupingBy(TaskOption::client, LinkedHashMap::new, Collectors.toList())));
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", EntryForm.blank(defaultDay(view, LocalDate.now(clock))));
         }

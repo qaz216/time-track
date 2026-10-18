@@ -48,6 +48,18 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void projectsLoggedDirectlyShowJustTheProjectNameAndNamedTasksShowBoth() throws Exception {
+        CurrentUser sam = data.user();
+        timesheets.addEntry(sam.asActor(), data.projectTask("Strategic Planning"), WEDNESDAY, "1:00", null);
+        timesheets.addEntry(sam.asActor(), data.task("Website", "Acme", "Design"), WEDNESDAY, "1:00", null);
+
+        mvc.perform(get("/").param("week", "2026-10-12").with(user(sam)))
+                .andExpect(content().string(containsString(">Strategic Planning<")))
+                .andExpect(content().string(not(containsString("Strategic Planning › General"))))
+                .andExpect(content().string(containsString(">Website › Design<")));
+    }
+
+    @Test
     void badInputComesBackAsAMessageWithWhatWasTyped() throws Exception {
         CurrentUser sam = data.user();
 

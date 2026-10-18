@@ -8,6 +8,8 @@ import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.aryehgolob.timesheet.catalog.Catalog;
+
 /** running_timer rows. The primary key on user_id is what makes "one timer per person" true. */
 @Component
 class RunningTimers {
@@ -20,10 +22,10 @@ class RunningTimers {
 
     Optional<RunningTimer> find(long userId) {
         return jdbc.query("""
-                select r.user_id, r.task_id, p.code || ' · ' || t.name, r.started_at, r.note
+                select r.user_id, r.task_id, %s, r.started_at, r.note
                 from running_timer r join task t on t.id = r.task_id join project p on p.id = t.project_id
                 where r.user_id = ?
-                """,
+                """.formatted(Catalog.LABEL_SQL),
                 rs -> rs.next()
                         ? Optional.of(new RunningTimer(rs.getLong(1), rs.getLong(2), rs.getString(3),
                                 rs.getObject(4, OffsetDateTime.class).toInstant(), rs.getString(5)))

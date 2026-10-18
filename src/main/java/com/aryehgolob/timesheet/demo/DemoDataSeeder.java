@@ -39,8 +39,8 @@ class DemoDataSeeder implements ApplicationRunner {
 
     static final String DEMO_PASSWORD = "demo1234";
 
-    /** Shown in the task picker as "CTG · Project Administration" and so on. */
-    static final List<String> CTG_TASKS = List.of(
+    /** Demo projects, grouped under the CTG heading in the project picker. */
+    static final List<String> CTG_PROJECTS = List.of(
             "Project Administration",
             "Financial Management",
             "Budget Planning & Tracking",
@@ -84,10 +84,12 @@ class DemoDataSeeder implements ApplicationRunner {
         AppUser sam = users.save(new AppUser("sam@example.com", "Sam Rivera", hash, Role.USER));
         AppUser jo = users.save(new AppUser("jo@example.com", "Jo Chen", hash, Role.USER));
 
-        Project ctg = projects.save(new Project("CTG", "CTG", "CTG"));
+        // Each project is logged against directly (its hidden default task), Clockify-style.
         Map<String, Task> task = new HashMap<>();
-        for (String name : CTG_TASKS) {
-            task.put(name, tasks.save(new Task(ctg, name, true)));
+        for (int i = 0; i < CTG_PROJECTS.size(); i++) {
+            String name = CTG_PROJECTS.get(i);
+            Project project = projects.save(new Project("CTG-%02d".formatted(i + 1), name, "CTG"));
+            task.put(name, tasks.save(Task.defaultFor(project, true)));
         }
         long projectAdmin = task.get("Project Administration").getId();
         long operations = task.get("Operations Management").getId();

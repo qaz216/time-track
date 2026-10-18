@@ -36,8 +36,8 @@ public record WeekView(
     public record TaskRow(String label, List<Integer> minutesPerDay, int total) {
     }
 
-    public record EntryLine(long id, String taskLabel, LocalDate date, int minutes, LocalTime startTime,
-            String note, int version) {
+    public record EntryLine(long id, String taskLabel, long projectId, LocalDate date, int minutes,
+            LocalTime startTime, String note, int version) {
 
         /** "09:05-10:42" or "1:37", for display and to pre-fill the edit box. */
         public String asTyped() {

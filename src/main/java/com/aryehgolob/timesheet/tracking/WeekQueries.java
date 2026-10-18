@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aryehgolob.timesheet.catalog.Catalog;
 import com.aryehgolob.timesheet.identity.Actor;
 import com.aryehgolob.timesheet.period.PeriodLock;
 import com.aryehgolob.timesheet.period.PeriodLocks;
@@ -52,14 +53,14 @@ public class WeekQueries {
             throw new NotFoundException("There's no such person.");
         }
         List<EntryLine> lines = jdbc.query("""
-                select e.id, p.code, t.name, e.work_date, e.minutes, e.start_time, e.note, e.version
+                select e.id, %s as label, p.id as project_id, e.work_date, e.minutes, e.start_time, e.note, e.version
                 from time_entry e
                 join task t on t.id = e.task_id
                 join project p on p.id = t.project_id
                 where e.user_id = ? and e.work_date between ? and ?
                 order by e.work_date, e.start_time nulls last, e.id
-                """,
-                (rs, i) -> new EntryLine(rs.getLong(1), rs.getString(2) + " · " + rs.getString(3),
+                """.formatted(Catalog.LABEL_SQL),
+                (rs, i) -> new EntryLine(rs.getLong(1), rs.getString(2), rs.getLong(3),
                         rs.getObject(4, LocalDate.class), rs.getInt(5), rs.getObject(6, LocalTime.class),
                         rs.getString(7), rs.getInt(8)),
                 ownerId, week.start(), week.end());

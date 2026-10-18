@@ -23,6 +23,9 @@ public class Task {
     private boolean billable;
     private boolean active;
 
+    /** Stands for "the project itself": entries logged against just the project use it. */
+    private boolean isDefault;
+
     protected Task() {
     }
 
@@ -31,6 +34,13 @@ public class Task {
         this.name = name;
         this.billable = billable;
         this.active = true;
+    }
+
+    /** The task behind "log time against this project", named General in reports. */
+    public static Task defaultFor(Project project, boolean billable) {
+        Task task = new Task(project, "General", billable);
+        task.isDefault = true;
+        return task;
     }
 
     public Long getId() {
@@ -51,5 +61,9 @@ public class Task {
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isDefault() {
+        return isDefault;
     }
 }

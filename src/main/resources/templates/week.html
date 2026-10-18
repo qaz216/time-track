@@ -56,7 +56,7 @@
             <select id="qa-task" name="taskId" required th:autofocus="${form.taskId() == null}">
                 <option value="">Choose a task…</option>
                 <optgroup th:each="group : ${taskGroups}" th:label="${group.key}">
-                    <option th:each="t : ${group.value}" th:value="${t.id()}" th:text="${t.taskName()}"
+                    <option th:each="t : ${group.value}" th:value="${t.id()}" th:text="${t.label()}"
                             th:selected="${form.taskId() != null and form.taskId() == t.id()}">Project Administration</option>
                 </optgroup>
             </select>

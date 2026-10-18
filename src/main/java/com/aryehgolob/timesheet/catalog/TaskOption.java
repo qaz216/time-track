@@ -1,5 +1,13 @@
 package com.aryehgolob.timesheet.catalog;
 
-/** A task as the entry form offers it, grouped under its project. */
-public record TaskOption(long id, String projectCode, String projectName, String taskName, boolean billable) {
+/**
+ * A task as the project picker offers it. A default task stands for "the
+ * project itself" and is shown under the project's name alone.
+ */
+public record TaskOption(long id, long projectId, String client, String projectCode, String projectName,
+        String taskName, boolean isDefault, boolean billable) {
+
+    public String label() {
+        return isDefault ? projectName : projectName + " › " + taskName;
+    }
 }
