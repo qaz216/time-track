@@ -90,6 +90,7 @@ class EntryController {
                 timesheets.addEntry(user.asActor(), taskId, date, time.get(), note);
                 // keep the project and day, clear the rest: the next entry is a few keystrokes away
                 redirect.addFlashAttribute("form", EntryForm.next(taskId, date));
+                redirect.addFlashAttribute("focusEntry", true);
                 return toWeek(day, null);
             } catch (InvalidInputException | NotAllowedException e) {
                 problem = e.getMessage();
@@ -97,6 +98,7 @@ class EntryController {
         }
         redirect.addFlashAttribute("error", problem);
         redirect.addFlashAttribute("form", typed);
+        redirect.addFlashAttribute("focusEntry", true);
         return toWeek(day, null);
     }
 

@@ -48,6 +48,20 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void theEntryBoxOnlyGrabsFocusRightAfterAnAddSoShortcutsWorkOnAFreshPage() throws Exception {
+        CurrentUser sam = data.user();
+
+        mvc.perform(get("/").with(user(sam)))
+                .andExpect(content().string(not(containsString("autofocus"))));
+
+        mvc.perform(post("/entries").with(user(sam)).with(csrf())
+                        .param("taskId", String.valueOf(data.task()))
+                        .param("date", WEDNESDAY.toString())
+                        .param("duration", "1:00"))
+                .andExpect(flash().attribute("focusEntry", true));
+    }
+
+    @Test
     void projectsLoggedDirectlyShowJustTheProjectNameAndNamedTasksShowBoth() throws Exception {
         CurrentUser sam = data.user();
         timesheets.addEntry(sam.asActor(), data.projectTask("Strategic Planning"), WEDNESDAY, "1:00", null);

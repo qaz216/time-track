@@ -37,7 +37,8 @@ document.addEventListener('submit', (event) => {
     }
 });
 
-// Browsers skip autofocus on some navigations (back/forward, restored tabs); make it dependable.
+// Only the entry bar right after an add, or the edit row, asks for focus, so a fresh page
+// leaves the shortcuts live. Browsers skip autofocus on some navigations (back/forward, restored tabs); make it dependable.
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[autofocus]')?.focus();
 });
