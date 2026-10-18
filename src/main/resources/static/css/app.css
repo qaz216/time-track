@@ -29,8 +29,12 @@ a { color: var(--accent); }
     border-bottom: 1px solid var(--border);
 }
 .topbar .brand { font-weight: 700; text-decoration: none; color: var(--text); }
-.topbar nav { display: flex; gap: 1rem; flex: 1; }
-.topbar nav a { text-decoration: none; }
+.topbar nav { display: flex; gap: 0.25rem; flex: 1; }
+.topbar nav a { text-decoration: none; padding: 0.35rem 0.7rem; border-radius: 6px; }
+.topbar nav a:hover, .topbar nav a:focus-visible { background: #eef0f3; }
+.topbar nav a:active { background: #dadee5; }
+/* the section you're in stays grey */
+.topbar nav a[aria-current="page"] { background: #e4e7ec; color: var(--text); font-weight: 600; }
 .signout { display: flex; align-items: center; gap: 0.75rem; margin: 0; }
 
 .page { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }

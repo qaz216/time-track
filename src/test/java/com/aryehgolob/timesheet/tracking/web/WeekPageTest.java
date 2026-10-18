@@ -48,6 +48,12 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void theTopBarMarksMyWeekAsTheCurrentSection() throws Exception {
+        mvc.perform(get("/").with(user(data.user())))
+                .andExpect(content().string(containsString("aria-current=\"page\">My week</a>")));
+    }
+
+    @Test
     void theEntryBoxOnlyGrabsFocusRightAfterAnAddSoShortcutsWorkOnAFreshPage() throws Exception {
         CurrentUser sam = data.user();
 
