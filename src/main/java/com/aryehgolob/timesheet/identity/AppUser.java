@@ -36,6 +36,11 @@ public class AppUser {
         this.active = true;
     }
 
+    /** People who leave keep their history; they just can't sign in. */
+    public void deactivate() {
+        this.active = false;
+    }
+
     public Long getId() {
         return id;
     }
