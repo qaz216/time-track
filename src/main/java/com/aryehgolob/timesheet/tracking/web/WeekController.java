@@ -1,4 +1,4 @@
-package com.aryehgolob.timesheet.timesheet.web;
+package com.aryehgolob.timesheet.tracking.web;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;

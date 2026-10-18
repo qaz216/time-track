@@ -23,6 +23,10 @@ public record CurrentUser(Long id, String email, String displayName, Role role, 
         return role == Role.ADMIN;
     }
 
+    public Actor asActor() {
+        return new Actor(id, isAdmin());
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
