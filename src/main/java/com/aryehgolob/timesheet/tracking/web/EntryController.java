@@ -43,7 +43,7 @@ class EntryController {
     /**
      * Every field is optional at the HTTP level so a half-filled bar comes back
      * with a message, not a 400. A day that turns out to be locked or submitted
-     * (the date box allows any day of the week) is a message too.
+     * (the date box allows any day) is a message too.
      *
      * <p>Times come as Clockify's three boxes, start, end and duration, resolved by
      * {@link TimeFields}. Leaving all three empty means "I'm starting this now":

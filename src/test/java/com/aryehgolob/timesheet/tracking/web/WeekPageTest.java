@@ -97,6 +97,19 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void anyDayCanBePickedAndThePageFollowsTheEntryToItsWeek() throws Exception {
+        CurrentUser sam = data.user();
+        LocalDate aMonthEarlier = LocalDate.of(2026, 9, 16);
+
+        mvc.perform(post("/entries").with(user(sam)).with(csrf())
+                        .param("taskId", String.valueOf(data.task())).param("week", "2026-10-12")
+                        .param("date", aMonthEarlier.toString()).param("duration", "1:00"))
+                .andExpect(redirectedUrl("/?week=2026-09-14"));
+
+        assertThat(data.entryCount(sam.id())).isOne();
+    }
+
+    @Test
     void addWithStartAndDurationWorksOutTheEnd() throws Exception {
         CurrentUser sam = data.user();
 

@@ -81,8 +81,8 @@
             <input name="end" placeholder="End" aria-label="End time" title="e.g. 5pm, 1715"
                    th:value="${form.end()}">
         </span>
-        <input class="eb-date manual-only" type="date" name="date" aria-label="Date" th:value="${form.date()}"
-               th:min="${weekStart}" th:max="${view.week().end()}">
+        <!-- any day: the server checks locks and submitted weeks, and the page then shows that day's week -->
+        <input class="eb-date manual-only" type="date" name="date" aria-label="Date" th:value="${form.date()}">
         <input class="eb-duration manual-only" name="duration" placeholder="0:00:00" aria-label="Duration"
                title="e.g. 1:30, 90m, 45s. Leave all times empty to start a timer now." th:value="${form.duration()}">
         <button type="submit" class="primary eb-go manual-only" data-when-empty="Start" data-when-filled="Add">Add</button>
