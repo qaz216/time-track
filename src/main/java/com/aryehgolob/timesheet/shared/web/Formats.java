@@ -16,6 +16,7 @@ public class Formats {
 
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH);
     private static final DateTimeFormatter SHORT_DAY = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
+    private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH);
     private static final DateTimeFormatter LONG_DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
     private static final DateTimeFormatter MOMENT = DateTimeFormatter.ofPattern("EEE d MMM, HH:mm", Locale.ENGLISH);
 
@@ -39,6 +40,10 @@ public class Formats {
 
     public String shortDay(LocalDate date) {
         return SHORT_DAY.format(date);
+    }
+
+    public String dayMonth(LocalDate date) {
+        return DAY_MONTH.format(date);
     }
 
     public String date(LocalDate date) {

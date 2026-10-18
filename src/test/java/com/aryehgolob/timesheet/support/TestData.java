@@ -56,11 +56,25 @@ public class TestData {
     /** A fresh active project with one task; returns the task id. */
     public long task() {
         int n = sequence.incrementAndGet();
+        return task("Project " + n, "Client " + n, "Task " + n);
+    }
+
+    public long task(String projectName, String client, String taskName) {
+        int n = sequence.incrementAndGet();
         Long projectId = jdbc.queryForObject(
                 "insert into project (code, name, client) values (?, ?, ?) returning id",
-                Long.class, "P" + n + "-" + (System.nanoTime() % 100000), "Project " + n, "Client " + n);
+                Long.class, "P" + n + "-" + (System.nanoTime() % 100000), projectName, client);
         return jdbc.queryForObject("insert into task (project_id, name) values (?, ?) returning id",
-                Long.class, projectId, "Task " + n);
+                Long.class, projectId, taskName);
+    }
+
+    public CurrentUser userNamed(String displayName) {
+        AppUser user = users.save(new AppUser(uniqueEmail(), displayName, passwordHash, Role.USER));
+        return (CurrentUser) userDetails.loadUserByUsername(user.getEmail());
+    }
+
+    public void deactivate(long userId) {
+        jdbc.update("update app_user set active = false where id = ?", userId);
     }
 
     public void archiveTask(long taskId) {

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.aryehgolob.timesheet.tracking.EntryNotFoundException;
+import com.aryehgolob.timesheet.shared.NotFoundException;
 import com.aryehgolob.timesheet.tracking.domain.NotAllowedException;
 
 /** Turns domain refusals into proper HTTP answers with a readable page. */
@@ -20,10 +20,10 @@ class ErrorPages {
         return "problem";
     }
 
-    @ExceptionHandler(EntryNotFoundException.class)
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    String notFound(Model model) {
-        model.addAttribute("message", "That entry doesn't exist. It may have been deleted.");
+    String notFound(NotFoundException e, Model model) {
+        model.addAttribute("message", e.getMessage());
         return "problem";
     }
 }

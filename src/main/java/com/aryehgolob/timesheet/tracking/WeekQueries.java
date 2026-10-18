@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aryehgolob.timesheet.identity.Actor;
 import com.aryehgolob.timesheet.period.PeriodLock;
 import com.aryehgolob.timesheet.period.PeriodLocks;
+import com.aryehgolob.timesheet.shared.NotFoundException;
 import com.aryehgolob.timesheet.tracking.WeekView.EntryLine;
 import com.aryehgolob.timesheet.tracking.WeekView.TaskRow;
 import com.aryehgolob.timesheet.tracking.domain.Decision.Denial;
@@ -45,7 +46,11 @@ public class WeekQueries {
         if (!actor.is(ownerId) && !actor.admin()) {
             throw new NotAllowedException(Denial.NOT_OWNER);
         }
-        String ownerName = jdbc.queryForObject("select display_name from app_user where id = ?", String.class, ownerId);
+        String ownerName = jdbc.query("select display_name from app_user where id = ?",
+                rs -> rs.next() ? rs.getString(1) : null, ownerId);
+        if (ownerName == null) {
+            throw new NotFoundException("There's no such person.");
+        }
         List<EntryLine> lines = jdbc.query("""
                 select e.id, p.code, t.name, e.work_date, e.minutes, e.start_time, e.note, e.version
                 from time_entry e

@@ -16,6 +16,8 @@ Then open http://localhost:8080 (port taken? `APP_PORT=8090 docker compose up --
 | `sam@example.com` | User |
 | `jo@example.com` | User |
 
+The demo data includes three weeks of time for Sam and Jo, with one of Jo's weeks left unsubmitted, so the admin view has something to show. To start fresh: `docker compose down -v`.
+
 Run the tests (needs Docker running, for Testcontainers):
 
 ```bash
@@ -70,6 +72,25 @@ Finance closes the books by setting one date. Nothing dated on or before it can 
 - **A week that straddles the line** (say the month ends on a Wednesday) stays editable on the open days. Submit and reopen are blocked only when the whole week is locked.
 - **Mistakes happen:** an admin can move the line back or remove it, and that's audited with the before and after dates. You can't lock days that haven't happened yet.
 - **Admin-only twice:** `/admin/**` is restricted by URL, *and* [`PeriodLockService`](src/main/java/com/aryehgolob/timesheet/period/PeriodLockService.java) checks the role itself, so a future endpoint that forgets can't open a hole.
+
+### Admin: team weeks and the CSV export
+
+**Team weeks** shows everyone × every week in a period, with each cell's total and a ✓ when submitted. It answers the Friday question, "who hasn't submitted?", at a glance. Click a cell to open that person's week read-only, with a *Reopen* button to send it back.
+
+- **People who've left** appear only if they logged time in the period, so old hours are never hidden but the list doesn't fill up with ghosts.
+- **Periods are whole weeks.** A range that starts mid-week widens to the Monday, because weeks are what people submit. There's a cap of one year.
+
+**Export CSV** produces one row per person × week × project × task:
+
+```
+email,name,week_start,week_status,client,project_code,project,task,billable,minutes,hours
+jo@example.com,Jo Chen,2026-09-28,submitted,Globex,GLOBEX-DATA,Data migration,Migration,yes,2025,33.75
+```
+
+- **Flat on purpose.** Finance can pivot it by client, person or week in Excel. Any pre-aggregated shape I picked would be the wrong one for someone.
+- **`minutes` is exact and is the column to reconcile on.** `hours` is the same value to two decimals, for reading.
+- **`week_status`** is on every row, so totals from weeks that are still drafts can't sneak into an invoice unnoticed.
+- **Escaping:** quoting is done by Apache Commons CSV, not hand-rolled. Cells starting with `= + - @` get a leading `'`, so a project called `=HYPERLINK(...)` can't become a live formula in someone's spreadsheet (formula injection). Both behaviours have tests.
 
 ### The week page
 

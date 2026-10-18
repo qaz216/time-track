@@ -123,3 +123,15 @@ kbd { font: 0.75rem ui-monospace, monospace; padding: 0.05rem 0.35rem; border: 1
 .narrow-page { max-width: 640px; }
 .inline-form { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; margin: 0; }
 .small { font-size: 0.85rem; }
+a.button { display: inline-block; padding: 0.45rem 0.9rem; border-radius: 6px; border: 1px solid var(--border); text-decoration: none; color: var(--text); background: var(--surface); }
+a.button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.crumb { margin: 0 0 0.25rem; font-size: 0.85rem; }
+.period-form { margin-bottom: 1rem; }
+
+.team th .sub { display: block; font-weight: 400; font-size: 0.7rem; color: var(--muted); }
+.team td a { display: block; text-decoration: none; color: inherit; border-radius: 4px; padding: 0.1rem 0.25rem; }
+.team td a:hover { background: var(--bg); }
+.team td.in { color: var(--ok); }
+.team td.draft { color: var(--text); }
+.team td.missing { color: #b5bac4; }
+.team .status { font-size: 0.8rem; }

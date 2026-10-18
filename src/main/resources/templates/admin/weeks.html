@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Team weeks')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="page" th:with="period=${overview.period()}">
+    <div class="week-head">
+        <div>
+            <h1>Team weeks</h1>
+            <p class="muted">
+                <span th:text="${@fmt.date(period.start())} + ' – ' + ${@fmt.date(period.end())}">28 Sep – 25 Oct 2026</span>
+                <span th:if="${lock.lockedThrough() != null}">
+                    · books closed through <span th:text="${@fmt.date(lock.lockedThrough())}">30 Sep</span>
+                </span>
+            </p>
+        </div>
+        <a class="button primary" th:href="@{/admin/weeks/export.csv(from=${period.start()}, to=${period.end()})}">Export CSV</a>
+    </div>
+
+    <p th:if="${error}" class="alert error" role="alert" th:text="${error}">Bad range</p>
+
+    <form th:action="@{/admin/weeks}" method="get" class="inline-form card period-form">
+        <label>From <input type="date" name="from" th:value="${period.start()}" required></label>
+        <label>To <input type="date" name="to" th:value="${period.end()}" required></label>
+        <button type="submit">Show</button>
+        <span class="muted small">Weeks run Monday to Sunday; ranges widen to whole weeks.</span>
+    </form>
+
+    <div class="grid-wrap card">
+        <table class="grid team">
+            <thead>
+            <tr>
+                <th scope="col">Person</th>
+                <th scope="col" th:each="w : ${overview.weeks()}" th:classappend="${w == thisWeek} ? 'today'">
+                    <span th:text="${@fmt.dayMonth(w.start())}">Mon 12 Oct</span>
+                    <span class="sub" th:text="${overview.submittedCount(w)} + '/' + ${overview.rows().size()} + ' in'">3/40 in</span>
+                </th>
+                <th scope="col" class="total">Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${overview.rows()}">
+                <th scope="row">
+                    <span th:text="${row.name()}">Sam Rivera</span>
+                    <span th:unless="${row.active()}" class="badge">left</span>
+                </th>
+                <td th:each="c : ${row.cells()}" th:classappend="${c.submitted()} ? 'in' : (${c.minutes() == 0} ? 'missing' : 'draft')">
+                    <a th:href="@{/admin/users/{id}/weeks(id=${row.userId()}, week=${c.week().start()})}"
+                       th:title="${c.submitted()} ? 'Submitted' : 'Not submitted'">
+                        <span th:text="${c.minutes() == 0} ? '—' : ${@fmt.total(c.minutes())}">38:30</span>
+                        <span class="status" th:text="${c.submitted()} ? '✓' : ''" aria-hidden="true">✓</span>
+                    </a>
+                </td>
+                <td class="total" th:text="${@fmt.total(row.total())}">150:00</td>
+            </tr>
+            <tr th:if="${overview.rows().isEmpty()}">
+                <td th:colspan="${overview.weeks().size() + 2}" class="muted empty">Nobody here yet.</td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <th scope="row">Total</th>
+                <td th:each="w : ${overview.weeks()}" th:text="${@fmt.total(overview.weekTotal(w))}">300:00</td>
+                <td></td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <p class="muted small">✓ submitted · plain number = draft · — = nothing logged. Click a cell to open that week.</p>
+</main>
+</body>
+</html>

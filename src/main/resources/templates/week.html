@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('My week')}"></head>
+<head th:replace="~{fragments :: head(${ownWeek ? 'My week' : view.ownerName()})}"></head>
 <body>
 <header th:replace="~{fragments :: header}"></header>
 <main class="page" th:with="weekStart=${view.week().start()}">
 
     <div class="week-head">
         <div>
-            <h1>Week of <span th:text="${@fmt.date(weekStart)}">12 Oct 2026</span></h1>
+            <p th:unless="${ownWeek}" class="muted crumb"><a th:href="@{/admin/weeks(from=${weekStart})}">&larr; Team weeks</a></p>
+            <h1><span th:unless="${ownWeek}" th:text="${view.ownerName()} + ' · '">Sam Rivera · </span>Week of <span th:text="${@fmt.date(weekStart)}">12 Oct 2026</span></h1>
             <nav class="week-nav" aria-label="Weeks">
-                <a id="prev-week" th:href="@{/(week=${view.week().previous().start()})}" title="Previous week  ( [ )">&larr; Previous</a>
-                <a th:href="@{/}">This week</a>
-                <a id="next-week" th:href="@{/(week=${view.week().next().start()})}" title="Next week  ( ] )">Next &rarr;</a>
+                <a id="prev-week" th:href="@{${weekUrl}(week=${view.week().previous().start()})}" title="Previous week  ( [ )">&larr; Previous</a>
+                <a th:href="@{${weekUrl}}">This week</a>
+                <a id="next-week" th:href="@{${weekUrl}(week=${view.week().next().start()})}" title="Next week  ( ] )">Next &rarr;</a>
             </nav>
         </div>
         <div class="week-status">
@@ -23,7 +24,7 @@
                   th:attr="data-confirm=${view.total() == 0} ? 'Submit a week with no time logged?' : null">
                 <button type="submit" class="primary">Submit week</button>
             </form>
-            <form th:if="${view.canReopen()}" th:action="@{/weeks/{d}/reopen(d=${weekStart})}" method="post">
+            <form th:if="${view.canReopen()}" th:action="@{${reopenUrl}}" method="post">
                 <button type="submit">Reopen</button>
             </form>
         </div>
@@ -55,7 +56,7 @@
         </label>
         <button type="submit" class="primary">Add</button>
     </form>
-    <p th:unless="${view.canEditAnyDay()}" class="alert">
+    <p th:if="${ownWeek and !view.canEditAnyDay()}" class="alert">
         <span th:if="${view.submitted()}">
             This week is submitted and read-only<span th:text="' (' + ${@fmt.moment(view.submittedAt())} + ')'"></span>.
             <span th:if="${view.canReopen()}">Reopen it to make changes.</span>
