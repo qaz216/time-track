@@ -21,7 +21,7 @@ document.addEventListener('keydown', (event) => {
     } else if (event.key === ']') {
         click('next-week');
     } else if (event.key === 'n') {
-        const task = document.getElementById('qa-task');
+        const task = document.getElementById('qa-desc');
         if (task) {
             event.preventDefault();
             task.focus();

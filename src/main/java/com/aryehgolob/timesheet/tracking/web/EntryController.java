@@ -16,6 +16,7 @@ import com.aryehgolob.timesheet.identity.CurrentUser;
 import com.aryehgolob.timesheet.shared.InvalidInputException;
 import com.aryehgolob.timesheet.tracking.StaleEntryException;
 import com.aryehgolob.timesheet.tracking.TimesheetService;
+import com.aryehgolob.timesheet.tracking.domain.NotAllowedException;
 import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 
 /**
@@ -33,22 +34,34 @@ class EntryController {
         this.timesheets = timesheets;
     }
 
+    /**
+     * Every field is optional at the HTTP level so a half-filled bar comes back
+     * with a message, not a 400. A day that turns out to be locked or submitted
+     * (the date box allows any day of the week) is a message too.
+     */
     @PostMapping
     String add(@AuthenticationPrincipal CurrentUser user,
-            @RequestParam long taskId,
-            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate date,
-            @RequestParam String time,
+            @RequestParam(required = false) Long taskId,
+            @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date,
+            @RequestParam(defaultValue = "") String time,
             @RequestParam(required = false) String note,
+            @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate week,
             RedirectAttributes redirect) {
-        try {
-            timesheets.addEntry(user.asActor(), taskId, date, time, note);
-            // keep the task and day so the next entry is one keystroke away
-            redirect.addFlashAttribute("form", new EntryForm(taskId, date, "", ""));
-        } catch (InvalidInputException e) {
-            redirect.addFlashAttribute("error", e.getMessage());
-            redirect.addFlashAttribute("form", new EntryForm(taskId, date, time, note));
+        LocalDate day = date != null ? date : (week != null ? week : LocalDate.now());
+        String problem = taskId == null ? "Pick a project." : date == null ? "Pick a day." : null;
+        if (problem == null) {
+            try {
+                timesheets.addEntry(user.asActor(), taskId, date, time, note);
+                // keep the project and day, clear the rest: the next entry is a few keystrokes away
+                redirect.addFlashAttribute("form", new EntryForm(taskId, date, "", ""));
+                return toWeek(day, null);
+            } catch (InvalidInputException | NotAllowedException e) {
+                problem = e.getMessage();
+            }
         }
-        return toWeek(date, null);
+        redirect.addFlashAttribute("error", problem);
+        redirect.addFlashAttribute("form", new EntryForm(taskId, date, time, note));
+        return toWeek(day, null);
     }
 
     /** @param week only used to send the user back where they were */

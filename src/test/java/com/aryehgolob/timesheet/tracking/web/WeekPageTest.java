@@ -73,6 +73,27 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void addingWithoutAProjectAsksForOneInsteadOfFailing() throws Exception {
+        mvc.perform(post("/entries").with(user(data.user())).with(csrf())
+                        .param("date", WEDNESDAY.toString()).param("time", "1:00").param("note", "kept"))
+                .andExpect(redirectedUrl("/?week=2026-10-12"))
+                .andExpect(flash().attribute("error", "Pick a project."))
+                .andExpect(flash().attribute("form", new EntryForm(null, WEDNESDAY, "1:00", "kept")));
+    }
+
+    @Test
+    void addingToASubmittedDayIsAMessageNotAnErrorPage() throws Exception {
+        CurrentUser sam = data.user();
+        data.submit(sam.id(), LocalDate.of(2026, 10, 12));
+
+        mvc.perform(post("/entries").with(user(sam)).with(csrf())
+                        .param("taskId", String.valueOf(data.task()))
+                        .param("date", WEDNESDAY.toString()).param("time", "1:00"))
+                .andExpect(redirectedUrl("/?week=2026-10-12"))
+                .andExpect(flash().attribute("error", containsString("submitted")));
+    }
+
+    @Test
     void userCannotDeleteAnotherUsersEntryByGuessingItsId() throws Exception {
         CurrentUser sam = data.user();
         CurrentUser jo = data.user();

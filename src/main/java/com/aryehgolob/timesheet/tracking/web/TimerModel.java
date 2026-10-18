@@ -18,8 +18,8 @@ import com.aryehgolob.timesheet.tracking.TimerService;
 class TimerModel {
 
     /** What the header chip and the "forgot it?" panel need. */
-    record TimerView(String taskLabel, Instant startedAt, LocalDateTime startedLocal, LocalDateTime nowLocal,
-            int elapsedMinutes, boolean longRunning) {
+    record TimerView(String taskLabel, String note, Instant startedAt, LocalDateTime startedLocal,
+            LocalDateTime nowLocal, int elapsedMinutes, boolean longRunning) {
     }
 
     private final TimerService timers;
@@ -37,7 +37,7 @@ class TimerModel {
         }
         Instant now = clock.instant();
         return timers.running(user.asActor())
-                .map((RunningTimer t) -> new TimerView(t.taskLabel(), t.startedAt(),
+                .map((RunningTimer t) -> new TimerView(t.taskLabel(), t.note(), t.startedAt(),
                         LocalDateTime.ofInstant(t.startedAt(), clock.getZone()).truncatedTo(ChronoUnit.MINUTES),
                         LocalDateTime.now(clock).truncatedTo(ChronoUnit.MINUTES),
                         t.elapsedMinutes(now), t.isLongRunning(now)))

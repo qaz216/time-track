@@ -50,34 +50,58 @@
         </form>
     </section>
 
-    <form th:if="${view.canEditAnyDay()}" id="quick-add" class="quick-add card" th:action="@{/entries}" method="post"
-          autocomplete="off">
-        <label>Task
-            <select id="qa-task" name="taskId" required th:autofocus="${form.taskId() == null}">
-                <option value="">Choose a task…</option>
+    <!--
+      The entry bar, Clockify-style: what you did, which project, then either a
+      time (manual mode) or a running clock (timer mode). It is a plain form;
+      app.js turns the project <select> into a searchable picker and adds the
+      mode switch. Without JavaScript it still works as a normal form.
+    -->
+    <form th:if="${view.canEditAnyDay()}" id="quick-add" class="entry-bar card" th:action="@{/entries}"
+          method="post" autocomplete="off"
+          th:attr="data-mode=${timer != null} ? 'timer' : 'manual', data-running=${timer != null}">
+        <input type="hidden" name="week" th:value="${weekStart}">
+        <input id="qa-desc" class="eb-desc" name="note" maxlength="500" autofocus
+               placeholder="What have you worked on?" aria-label="What have you worked on?"
+               th:value="${form.note()}">
+
+        <span th:if="${timer != null}" class="eb-running timer-only">
+            <span th:text="${timer.note() ?: '(no description)'}">Kickoff</span>
+            <span class="eb-running-project" th:text="${timer.taskLabel()}">Strategic Planning</span>
+        </span>
+
+        <div class="eb-project">
+            <select id="qa-task" name="taskId" aria-label="Project" data-picker>
+                <option value="">Project</option>
                 <optgroup th:each="group : ${taskGroups}" th:label="${group.key}">
                     <option th:each="t : ${group.value}" th:value="${t.id()}" th:text="${t.label()}"
-                            th:selected="${form.taskId() != null and form.taskId() == t.id()}">Project Administration</option>
+                            th:attr="data-project-id=${t.projectId()}, data-project=${t.projectName()},
+                                     data-task=${t.isDefault()} ? '' : ${t.taskName()}"
+                            th:selected="${form.taskId() != null and form.taskId() == t.id()}">Strategic Planning</option>
                 </optgroup>
             </select>
-        </label>
-        <label>Day
-            <select name="date">
-                <option th:each="d : ${view.days()}" th:if="${view.canEdit(d)}" th:value="${d}"
-                        th:text="${@fmt.day(d)}" th:selected="${d == form.date()}">Mon 12 Oct</option>
-            </select>
-        </label>
-        <label>Time
-            <input name="time" required autocomplete="off" placeholder="1:30 · 90m · 9:00-10:30"
-                   th:value="${form.time()}" th:autofocus="${form.taskId() != null}">
-        </label>
-        <label class="grow">Note
-            <input name="note" maxlength="500" autocomplete="off" th:value="${form.note()}">
-        </label>
-        <button type="submit" class="primary">Add</button>
-        <button type="submit" id="timer-start" th:formaction="@{/timer/start}" formnovalidate
-                th:text="${timer != null} ? 'Switch timer' : 'Start timer'"
-                title="Start a timer on this task  ( t )">Start timer</button>
+        </div>
+
+        <input class="eb-time manual-only" name="time" placeholder="1:30 or 9:00-10:30" aria-label="Time"
+               th:value="${form.time()}">
+        <input class="eb-date manual-only" type="date" name="date" aria-label="Date" th:value="${form.date()}"
+               th:min="${weekStart}" th:max="${view.week().end()}">
+        <button type="submit" class="primary eb-go manual-only">Add</button>
+
+        <strong id="bar-clock" class="eb-clock timer-only"
+                th:attr="data-started=${timer != null} ? ${timer.startedAt().toEpochMilli()} : null">00:00:00</strong>
+        <button th:if="${timer == null}" id="timer-start" type="submit" class="primary eb-go timer-only"
+                th:formaction="@{/timer/start}" title="Start a timer  ( t )">Start</button>
+        <button th:if="${timer != null}" type="submit" class="stop eb-go timer-only"
+                th:formaction="@{/timer/stop}" title="Stop and log  ( t )">Stop</button>
+
+        <div class="eb-modes" role="group" aria-label="Entry mode" hidden>
+            <button type="button" data-mode="timer" title="Timer mode" aria-label="Timer mode">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9" r="5.5"/><path d="M8 6v3l2 1.5M6.5 1.5h3"/></svg>
+            </button>
+            <button type="button" data-mode="manual" title="Manual mode" aria-label="Manual mode">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 4h8M5.5 8h8M5.5 12h8"/><circle cx="2.5" cy="4" r=".6"/><circle cx="2.5" cy="8" r=".6"/><circle cx="2.5" cy="12" r=".6"/></svg>
+            </button>
+        </div>
     </form>
     <p th:if="${ownWeek and !view.canEditAnyDay()}" class="alert">
         <span th:if="${view.submitted()}">
