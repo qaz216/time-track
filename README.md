@@ -20,7 +20,7 @@ Then open http://localhost:8080 (port taken? `APP_PORT=8090 docker compose up --
 | `sam` | `demo` | User |
 | `jo` | `demo` | User |
 
-The demo setup creates these accounts, the ten CTG projects, and four weeks of sample time for Sam and Jo, shaped so the team view shows every state: submitted weeks, a draft Jo forgot to submit, and a week Jo logged nothing. Demo's own timesheet starts empty, so you can try entering time. To start fresh: `docker compose down -v`.
+The demo setup creates these accounts, two projects with their tasks (CTG, with ten, and Amazon, with five), and four weeks of sample time for Sam and Jo, shaped so the team view shows every state: submitted weeks, a draft Jo forgot to submit, and a week Jo logged nothing. Demo's own timesheet starts empty, so you can try entering time. To start fresh: `docker compose down -v`.
 
 Or run it with Maven alone (JDK 21 and Docker running; no Compose, no Postgres to install):
 
@@ -173,7 +173,7 @@ A week is a **draft** until you press *Submit week*; then it's read-only. You ca
 
 ```
 email,name,week_start,week_status,client,project_code,project,task,billable,seconds,hours
-jo@example.com,Jo Chen,2026-09-28,submitted,CTG,CTG-02,Financial Management,General,yes,121500,33.75
+jo@example.com,Jo Chen,2026-09-28,submitted,,CTG,CTG,Financial Management,yes,121500,33.75
 ```
 
 - **`seconds` is exact and is the column to reconcile on.** `hours` is the same value to two decimals, for reading.
@@ -191,7 +191,7 @@ The page leads with one bar, modelled on Clockify's tracker:
 - **Description first, free text.** It's the entry's note. Then pick a project, then a time (manual mode) or press START (timer mode). **Leaving the times as they open (start = end, no duration) starts a timer from now**, because "I'm starting this" is the common case and there's no point making you switch modes for it. If a timer is already running, it's logged first. The two icons switch modes, the choice is remembered in the browser, and a running timer always shows in timer mode.
 - **Start, end and duration, like Clockify.** Start and end open on the current time and keep up with the clock until you touch them; clicking one shows it compactly and selected (`221PM`) so you just type over it. Each box takes casual input (`9`, `915`, `115pm`, `1:15 PM`, `13:15`) and tidies it on blur. Change start or end and the duration follows; change the duration and the end moves. Either half is enough with a duration, or type a duration alone. [`TimeFields`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimeFields.java) is the one place that turns the three boxes into an entry; [`time-fields.js`](src/main/resources/static/js/time-fields.js) only previews it, and the server checks everything again. Clock times show on a 12-hour clock; 24-hour input works too.
 - **The edit row is the same bar:** description, project (an entry can move to another project), start - end, duration. The day stays fixed; to move an entry to another day, delete and re-add it.
-- **Project picker:** a searchable popover grouped under client headings ("CTG · 10 Projects"), with a colour dot per project and expandable tasks ("3 Tasks ⌄"). It works from the keyboard: Tab to it, type to search, arrows, Enter. Colours are derived from the project id, so there's nothing to manage.
+- **Project picker:** a searchable popover listing each project with its tasks folded underneath ("CTG · 10 Tasks ⌄"); projects that have a client are grouped under a client heading, Clockify-style. Each project has a colour dot. It works from the keyboard: Tab to it, type to search, arrows, Enter. Colours are derived from the project id, so there's nothing to manage.
 - **"Project" versus the spec's "project + task":** most of the time people log against a project, as in Clockify. Each such project has a hidden *default task*, so every entry still has both and reports stay uniform. In reports the default task is called `General`; on screen you just see the project. A project that needs real tasks simply adds them.
 - **Progressive enhancement:** the server renders a normal form with a plain `<select>`, and [`picker.js`](src/main/resources/static/js/picker.js) turns it into the popover. The select still holds the value, so submitting is unchanged and the page works without JavaScript. For 40 people the whole project list goes in the page, so there's no search API.
 - **Day list:** only days with entries, newest first ("Today", "Yesterday", "Fri 16 Oct"), each with its total. The task × day grid above stays as the weekly rollup; entries are the source of truth.

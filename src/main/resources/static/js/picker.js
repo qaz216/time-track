@@ -4,7 +4,7 @@
 // The <select> stays in the form and holds the value, so the form submits
 // exactly as before and still works if this script never runs. Everything the
 // picker shows is read from the select's options:
-//   <optgroup label="CTG">                      -> heading
+//   <optgroup label="Acme">                     -> client heading (label="" = no client, no heading)
 //   <option data-project-id data-project data-colour> -> the project itself (its default task)
 //   <option data-project-id data-project data-task="Design"> -> a named task
 (() => {
@@ -111,16 +111,19 @@
                     .filter(Boolean);
                 if (!shown.length) continue;
 
-                const folded = collapsed.has(group.client) && !query;
-                const heading = el('li', {class: 'picker-heading', role: 'presentation'},
-                    el('span', {}, group.client),
-                    el('span', {class: 'count'}, `${shown.length} ${shown.length === 1 ? 'Project' : 'Projects'} ${folded ? '⌄' : '⌃'}`));
-                heading.addEventListener('mousedown', (event) => {
-                    event.preventDefault();
-                    folded ? collapsed.delete(group.client) : collapsed.add(group.client);
-                    render();
-                });
-                list.append(heading);
+                // projects with no client sit at the top level, without a heading
+                const folded = group.client && collapsed.has(group.client) && !query;
+                if (group.client) {
+                    const heading = el('li', {class: 'picker-heading', role: 'presentation'},
+                        el('span', {}, group.client),
+                        el('span', {class: 'count'}, `${shown.length} ${shown.length === 1 ? 'Project' : 'Projects'} ${folded ? '⌄' : '⌃'}`));
+                    heading.addEventListener('mousedown', (event) => {
+                        event.preventDefault();
+                        folded ? collapsed.delete(group.client) : collapsed.add(group.client);
+                        render();
+                    });
+                    list.append(heading);
+                }
                 if (folded) continue;
 
                 for (const {project, tasks, projectHit} of shown) {
@@ -154,7 +157,7 @@
                     }
                 }
             }
-            if (!options.length) {
+            if (!list.children.length) {   // folded projects still count as matches
                 list.append(el('li', {class: 'picker-empty', role: 'presentation'}, 'No project matches.'));
             }
             highlight(Math.min(Math.max(active, 0), options.length - 1));

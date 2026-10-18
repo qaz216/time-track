@@ -30,10 +30,10 @@ import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
 
 /**
  * Seeds an empty database (dev profile only) with the demo accounts, the CTG
- * projects, and four weeks of sample time for Sam and Jo, shaped so the team
- * view shows every state: submitted, draft, and nothing logged. The demo
- * user's own timesheet starts empty. Time goes through the real services, so
- * it's validated and audited like anything typed.
+ * and Amazon projects with their tasks, and four weeks of sample time for Sam
+ * and Jo, shaped so the team view shows every state: submitted, draft, and
+ * nothing logged. The demo user's own timesheet starts empty. Time goes
+ * through the real services, so it's validated and audited like anything typed.
  */
 @Component
 @ConditionalOnBooleanProperty("timesheet.seed-demo-data")
@@ -42,8 +42,8 @@ class DemoDataSeeder implements ApplicationRunner {
     /** Every demo account uses this password; the sign-in page says so in the dev profile. */
     static final String DEMO_PASSWORD = "demo";
 
-    /** Demo projects, grouped under the CTG heading in the project picker. */
-    static final List<String> CTG_PROJECTS = List.of(
+    /** The CTG project's tasks. */
+    static final List<String> CTG_TASKS = List.of(
             "Project Administration",
             "Financial Management",
             "Budget Planning & Tracking",
@@ -55,8 +55,16 @@ class DemoDataSeeder implements ApplicationRunner {
             "Compliance & Reporting",
             "Strategic Planning");
 
-    /** One sample entry: a project, a time as a user would type it, and a description. */
-    private record Slot(String project, String time, String note) {
+    /** The Amazon project's tasks. */
+    static final List<String> AMAZON_TASKS = List.of(
+            "Discovery",
+            "UX Design",
+            "Development",
+            "QA & Testing",
+            "Deployment");
+
+    /** One sample entry: a task, a time as a user would type it, and a description. */
+    private record Slot(String task, String time, String note) {
     }
 
     /** Sam, a project lead: clock ranges, a different shape each weekday. */
@@ -72,15 +80,15 @@ class DemoDataSeeder implements ApplicationRunner {
             DayOfWeek.WEDNESDAY, List.of(
                     new Slot("Billing & Invoicing", "9:15-11:45", "Prepare client invoices"),
                     new Slot("Operations Management", "11:45-12:15", "Standup"),
-                    new Slot("Project Administration", "13:00-17:30", "Risk register review")),
+                    new Slot("Development", "13:00-17:30", "Checkout API integration")),
             DayOfWeek.THURSDAY, List.of(
-                    new Slot("Strategic Planning", "9:00-12:00", "Roadmap workshop"),
+                    new Slot("Discovery", "9:00-12:00", "Requirements workshop"),
                     new Slot("Resource Management", "13:00-15:20", "Interview candidates"),
                     new Slot("Compliance & Reporting", "15:20-16:50", "Audit evidence")),
             DayOfWeek.FRIDAY, List.of(
                     new Slot("Budget Planning & Tracking", "9:30-11:00", "Budget variance review"),
                     new Slot("Operations Management", "11:00-12:00", "Team retro"),
-                    new Slot("Project Administration", "13:00-15:00", "Weekly status report")));
+                    new Slot("QA & Testing", "13:00-15:00", "Regression test pass")));
 
     /** Jo, in finance: mostly plain durations, typed at the end of the day. */
     private static final Map<DayOfWeek, List<Slot>> JO = Map.of(
@@ -134,15 +142,13 @@ class DemoDataSeeder implements ApplicationRunner {
         AppUser sam = users.save(new AppUser("sam", "sam@example.com", "Sam Rivera", hash, Role.USER));
         AppUser jo = users.save(new AppUser("jo", "jo@example.com", "Jo Chen", hash, Role.USER));
 
-        // Each project is logged against directly (its hidden default task), Clockify-style.
+        // Two projects with no client, so the picker lists them at the top level, each with its tasks.
         Map<String, Long> taskOf = new HashMap<>();
-        for (int i = 0; i < CTG_PROJECTS.size(); i++) {
-            Project project = projects.save(new Project("CTG-%02d".formatted(i + 1), CTG_PROJECTS.get(i), "CTG"));
-            taskOf.put(project.getName(), tasks.save(Task.defaultFor(project, true)).getId());
-        }
+        addProject("CTG", "CTG", CTG_TASKS, taskOf);
+        addProject("AMZ", "Amazon", AMAZON_TASKS, taskOf);
 
         seedSampleTime(new Actor(sam.getId(), false), new Actor(jo.getId(), false), taskOf);
-        log.info("Seeded demo accounts, projects and sample time for Sam and Jo. Sign in as demo / {}",
+        log.info("Seeded demo accounts, the CTG and Amazon projects, and sample time for Sam and Jo. Sign in as demo / {}",
                 DEMO_PASSWORD);
     }
 
@@ -192,9 +198,16 @@ class DemoDataSeeder implements ApplicationRunner {
         submissions.submit(jo, jo.userId(), weeks[0]);
     }
 
+    private void addProject(String code, String name, List<String> taskNames, Map<String, Long> taskOf) {
+        Project project = projects.save(new Project(code, name, null));
+        for (String taskName : taskNames) {
+            taskOf.put(taskName, tasks.save(new Task(project, taskName, true)).getId());
+        }
+    }
+
     private void log(Actor who, LocalDate day, List<Slot> slots, Map<String, Long> taskOf) {
         for (Slot slot : slots) {
-            timesheets.addEntry(who, taskOf.get(slot.project()), day, slot.time(), slot.note());
+            timesheets.addEntry(who, taskOf.get(slot.task()), day, slot.time(), slot.note());
         }
     }
 }

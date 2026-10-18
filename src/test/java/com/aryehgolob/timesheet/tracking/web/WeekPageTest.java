@@ -62,6 +62,19 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void aProjectWithNoClientIsOfferedWithItsTasksAndLabelledProjectThenTask() throws Exception {
+        CurrentUser sam = data.user();
+        long task = data.task("Amazon", null, "Development");
+        timesheets.addEntry(sam.asActor(), task, WEDNESDAY, "2:00", null);
+
+        mvc.perform(get("/").param("week", "2026-10-12").with(user(sam)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<optgroup>")))
+                .andExpect(content().string(containsString("data-task=\"Development\"")))
+                .andExpect(content().string(containsString("Amazon › Development")));
+    }
+
+    @Test
     void projectsLoggedDirectlyShowJustTheProjectNameAndNamedTasksShowBoth() throws Exception {
         CurrentUser sam = data.user();
         timesheets.addEntry(sam.asActor(), data.projectTask("Strategic Planning"), WEDNESDAY, "1:00", null);

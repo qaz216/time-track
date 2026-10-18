@@ -3,6 +3,7 @@ package com.aryehgolob.timesheet.tracking.web;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.aryehgolob.timesheet.catalog.Catalog;
-import com.aryehgolob.timesheet.catalog.TaskOption;
 import com.aryehgolob.timesheet.identity.CurrentUser;
 import com.aryehgolob.timesheet.tracking.WeekQueries;
 import com.aryehgolob.timesheet.tracking.WeekSubmissionService;
@@ -57,9 +57,10 @@ class WeekController {
         model.addAttribute("weekUrl", "/");
         model.addAttribute("reopenUrl", "/weeks/" + view.week().start() + "/reopen");
         model.addAttribute("editId", edit);
-        // grouped under client headings, like Clockify's categories
+        // grouped under client headings, like Clockify; "" holds projects with no client (no heading)
         model.addAttribute("taskGroups", catalog.activeTasks().stream()
-                .collect(Collectors.groupingBy(TaskOption::client, LinkedHashMap::new, Collectors.toList())));
+                .collect(Collectors.groupingBy(t -> Objects.requireNonNullElse(t.client(), ""),
+                        LinkedHashMap::new, Collectors.toList())));
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", EntryForm.blank(defaultDay(view, LocalDate.now(clock))));
         }

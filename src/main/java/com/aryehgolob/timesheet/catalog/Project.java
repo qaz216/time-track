@@ -20,6 +20,7 @@ public class Project {
     protected Project() {
     }
 
+    /** @param client may be null: the project then sits at the top level of the picker */
     public Project(String code, String name, String client) {
         this.code = code;
         this.name = name;

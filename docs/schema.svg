@@ -212,7 +212,7 @@
     <text x="64" y="73" class="col">code</text><text x="168" y="73" class="type">varchar(20)</text><text x="392" y="73" class="note" text-anchor="end">e.g. CTG-01</text>
     <text x="64" y="95" class="col">name</text><text x="168" y="95" class="type">varchar(100)</text>
     <rect x="0" y="102" width="400" height="22" class="stripe"/>
-    <text x="64" y="117" class="col">client</text><text x="168" y="117" class="type">varchar(100)</text><text x="392" y="117" class="note" text-anchor="end">heading in the picker</text>
+    <text x="64" y="117" class="col">client</text><text x="168" y="117" class="type">varchar(100)</text><text x="392" y="117" class="note" text-anchor="end">optional; picker heading</text>
     <text x="64" y="139" class="col">active</text><text x="168" y="139" class="type">boolean</text><text x="392" y="139" class="note" text-anchor="end">archived, never deleted</text>
   </g>
 

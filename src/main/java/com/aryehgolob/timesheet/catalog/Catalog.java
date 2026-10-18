@@ -23,14 +23,14 @@ public class Catalog {
         this.jdbc = jdbc;
     }
 
-    /** Ordered for the picker: by client, then project, default task first. */
+    /** Ordered for the picker: projects without a client first, then by client, then project, default task first. */
     public List<TaskOption> activeTasks() {
         return jdbc.query("""
                 select t.id, p.id as project_id, p.client, p.code, p.name as project_name,
                        t.name as task_name, t.is_default, t.billable
                 from task t join project p on p.id = t.project_id
                 where t.active and p.active
-                order by p.client, p.name, t.is_default desc, t.name
+                order by p.client nulls first, p.name, t.is_default desc, t.name
                 """,
                 (rs, i) -> new TaskOption(rs.getLong("id"), rs.getLong("project_id"), rs.getString("client"),
                         rs.getString("code"), rs.getString("project_name"), rs.getString("task_name"),
