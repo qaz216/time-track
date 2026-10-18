@@ -75,7 +75,8 @@
                 <optgroup th:each="group : ${taskGroups}" th:label="${group.key}">
                     <option th:each="t : ${group.value}" th:value="${t.id()}" th:text="${t.label()}"
                             th:attr="data-project-id=${t.projectId()}, data-project=${t.projectName()},
-                                     data-task=${t.isDefault()} ? '' : ${t.taskName()}"
+                                     data-task=${t.isDefault()} ? '' : ${t.taskName()},
+                                     data-colour=${t.colour()}"
                             th:selected="${form.taskId() != null and form.taskId() == t.id()}">Strategic Planning</option>
                 </optgroup>
             </select>
@@ -142,11 +143,11 @@
     </div>
 
     <section class="days">
-        <article class="day" th:each="d, s : ${view.days()}" th:with="lines=${view.entriesByDay().get(d)}"
+        <article class="day" th:each="d : ${view.loggedDays()}" th:with="lines=${view.entriesByDay().get(d)}"
                  th:classappend="${d == today} ? 'today'">
             <h2>
-                <span th:text="${@fmt.day(d)}">Mon 12 Oct</span>
-                <span class="muted" th:text="${@fmt.minutes(view.dayTotals()[s.index])}">7:30</span>
+                <span th:text="${@fmt.relativeDay(d)}">Fri 16 Oct</span>
+                <span class="day-total" th:text="${@fmt.total(view.dayTotal(d))}">7:30</span>
                 <span th:if="${view.locked(d)}" class="badge">Locked</span>
             </h2>
             <ul class="entries" th:unless="${lines.isEmpty()}">
@@ -154,7 +155,8 @@
                     <th:block th:if="${editId == null or editId != e.id() or !view.canEdit(d)}">
                         <span class="range" th:text="${e.isRange()} ? ${e.asTyped()} : ''">09:05-10:42</span>
                         <span class="duration" th:text="${@fmt.total(e.minutes())}">1:37</span>
-                        <span class="task" th:text="${e.taskLabel()}">ACME · Dev</span>
+                        <span class="task"><span class="dot" th:style="'background:' + ${e.colour()}"></span>
+                            <span th:text="${e.taskLabel()}">Strategic Planning</span></span>
                         <span class="note" th:text="${e.note()}">Standup</span>
                         <span class="actions" th:if="${view.canEdit(d)}">
                             <a th:href="@{/(week=${weekStart}, edit=${e.id()})}">Edit</a>

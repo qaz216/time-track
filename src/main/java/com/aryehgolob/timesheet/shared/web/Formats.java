@@ -38,6 +38,18 @@ public class Formats {
         return DAY.format(date);
     }
 
+    /** "Today", "Yesterday", otherwise "Fri 16 Oct". */
+    public String relativeDay(LocalDate date) {
+        LocalDate today = LocalDate.now(clock);
+        if (date.equals(today)) {
+            return "Today";
+        }
+        if (date.equals(today.minusDays(1))) {
+            return "Yesterday";
+        }
+        return day(date);
+    }
+
     public String shortDay(LocalDate date) {
         return SHORT_DAY.format(date);
     }

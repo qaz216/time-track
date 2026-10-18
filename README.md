@@ -34,8 +34,8 @@ Run the tests (needs Docker running, for Testcontainers):
 
 ## A two-minute tour
 
-1. **Sign in as Sam.** Focus is already on the task picker. Type `p` (Project Administration), Tab, Tab, `9:05-10:42`, Tab, a note, Enter. Then type `1.5` and Enter: the second entry reuses the same task and day. Now try `1.33`.
-2. Press `t` to start a timer; the header chip ticks on every page. Press `t` again to stop and log it.
+1. **Sign in as Sam.** The cursor is in "What have you worked on?". Type anything, Tab to **Project**, type `fin`, Enter, Tab, `9:05-10:42`, Enter. Add another with `1.5`: the project and day are kept. Now try `1.33`.
+2. Click the clock icon at the right of the bar to switch to timer mode, then START (or press `t`). It ticks in the bar and in the header on every page; STOP or `t` logs it.
 3. Click **Submit week**. The week goes read-only; **Reopen** brings it back.
 4. **Sign in as the admin** and open **Team weeks**: everyone × every week, ✓ for submitted, with Jo's missing week easy to spot. Click a cell to see that week, then **Export CSV**.
 5. Open **Close period** and lock through last month. Now nobody, admins included, can change those days.
@@ -74,7 +74,7 @@ Eight tables, all in one readable migration: [`V1__schema.sql`](src/main/resourc
 | Table | Holds | Notes |
 |---|---|---|
 | `app_user` | people, `USER` or `ADMIN` | Deactivated, never deleted |
-| `project`, `task` | what time is logged against | Archived, never deleted, so old entries always resolve |
+| `project`, `task` | what time is logged against | Archived, never deleted, so old entries always resolve. A project can have a hidden *default task* (`is_default`), so time can be logged against just the project |
 | `time_entry` | user, task, `work_date`, `minutes`, optional `start_time`, note, `version` | The only time data |
 | `week_submission` | (user, Monday) | A row means submitted; no row means draft |
 | `period_lock` | one `locked_through` date | A single row (`id = 1`, check-constrained) |
@@ -173,14 +173,24 @@ jo@example.com,Jo Chen,2026-09-28,submitted,CTG,CTG,CTG,Financial Management,yes
 - **`week_status` is on every row**, so draft hours can't sneak into an invoice unnoticed.
 - **Escaping:** quoting is done by Apache Commons CSV, not hand-rolled. Cells starting with `= + - @` get a leading `'`, so a project called `=HYPERLINK(...)` can't become a live formula in someone's spreadsheet (formula injection).
 
-### The week page and keyboard entry
+### The week page: a Clockify-style entry bar
 
-Entries are the source of truth; the task × day grid is a read-only rollup.
+The page leads with one bar, modelled on Clockify's tracker:
 
-- The task picker has focus on load. Pick a task, Tab, time, Tab, note, Enter. After adding, the cursor sits in the time field with the same task and day.
+```
+[ What have you worked on?        ] [⊕ Project] [ 1:30 or 9:00-10:30 ] [ date ] [ ADD ]  ⏱ ☰
+```
+
+- **Description first, free text.** It's the entry's note. Then pick a project, then a time (manual mode) or press START (timer mode). The two icons switch modes, the choice is remembered in the browser, and a running timer always shows in timer mode.
+- **Project picker:** a searchable popover grouped under client headings ("CTG · 10 Projects"), with a colour dot per project and expandable tasks ("3 Tasks ⌄"). It works from the keyboard: Tab to it, type to search, arrows, Enter. Colours are derived from the project id, so there's nothing to manage.
+- **"Project" versus the spec's "project + task":** most of the time people log against a project, as in Clockify. Each such project has a hidden *default task*, so every entry still has both and reports stay uniform. In reports the default task is called `General`; on screen you just see the project. A project that needs real tasks simply adds them.
+- **Progressive enhancement:** the server renders a normal form with a plain `<select>`, and [`picker.js`](src/main/resources/static/js/picker.js) turns it into the popover. The select still holds the value, so submitting is unchanged and the page works without JavaScript. For 40 people the whole project list goes in the page, so there's no search API.
+- **Day list:** only days with entries, newest first ("Today", "Yesterday", "Fri 16 Oct"), each with its total. The task × day grid above stays as the weekly rollup; entries are the source of truth.
+- After adding, the project and day are kept and the cursor goes back to the description.
 - `n` new entry · `[` `]` previous/next week · `t` start or stop the timer · `Esc` cancel an edit.
-- Bad input comes back with a message and exactly what you typed.
-- Plain HTML forms, post/redirect/get, and about 70 lines of JavaScript. No front-end build, no SPA, and it works at phone width.
+- Bad input, or a day that turns out to be locked, comes back as a message with exactly what you typed.
+- Plain HTML forms, post/redirect/get, and about 350 lines of JavaScript in two files. No front-end build, no SPA, and it works at phone width.
+- **Cut from Clockify:** tags, favourites, and creating projects from the picker (that's an admin job, and admin screens are the first item under next steps).
 
 ### Timer
 

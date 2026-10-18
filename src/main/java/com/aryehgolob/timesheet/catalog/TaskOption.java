@@ -10,4 +10,8 @@ public record TaskOption(long id, long projectId, String client, String projectC
     public String label() {
         return isDefault ? projectName : projectName + " › " + taskName;
     }
+
+    public String colour() {
+        return ProjectColour.of(projectId);
+    }
 }

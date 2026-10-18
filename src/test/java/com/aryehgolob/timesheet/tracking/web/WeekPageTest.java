@@ -60,6 +60,21 @@ class WeekPageTest extends IntegrationTest {
     }
 
     @Test
+    void dayListShowsOnlyDaysWithTimeNewestFirst() throws Exception {
+        CurrentUser sam = data.user();
+        long task = data.task();
+        timesheets.addEntry(sam.asActor(), task, LocalDate.of(2031, 3, 3), "1:00", null);  // Monday
+        timesheets.addEntry(sam.asActor(), task, LocalDate.of(2031, 3, 5), "2:00", null);  // Wednesday
+
+        String page = mvc.perform(get("/").param("week", "2031-03-03").with(user(sam)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(page).contains("Wed 5 Mar", "Mon 3 Mar").doesNotContain("Tue 4 Mar", "Sun 9 Mar");
+        assertThat(page.indexOf("Wed 5 Mar")).isLessThan(page.indexOf("Mon 3 Mar"));
+    }
+
+    @Test
     void badInputComesBackAsAMessageWithWhatWasTyped() throws Exception {
         CurrentUser sam = data.user();
 

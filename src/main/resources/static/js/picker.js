@@ -5,11 +5,12 @@
 // exactly as before and still works if this script never runs. Everything the
 // picker shows is read from the select's options:
 //   <optgroup label="CTG">                      -> heading
-//   <option data-project-id data-project>       -> the project itself (its default task)
+//   <option data-project-id data-project data-colour> -> the project itself (its default task)
 //   <option data-project-id data-project data-task="Design"> -> a named task
 (() => {
-    // golden-angle spread so neighbouring projects get clearly different colours
-    const colour = (projectId) => `hsl(${Math.round((projectId * 137.508) % 360)} 58% 46%)`;
+    // each option carries its project's colour (data-colour), computed once on the server
+    const colours = new Map();
+    const colour = (projectId) => colours.get(projectId) ?? '#999';
 
     const el = (tag, attrs = {}, ...children) => {
         const node = document.createElement(tag);
@@ -31,6 +32,7 @@
             const projects = new Map();
             for (const option of group.querySelectorAll('option')) {
                 const id = Number(option.dataset.projectId);
+                colours.set(id, option.dataset.colour);
                 if (!projects.has(id)) {
                     projects.set(id, {id, name: option.dataset.project, value: null, tasks: []});
                 }

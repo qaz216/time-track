@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.aryehgolob.timesheet.catalog.ProjectColour;
 import com.aryehgolob.timesheet.period.PeriodLock;
 import com.aryehgolob.timesheet.tracking.domain.TimeInput;
 import com.aryehgolob.timesheet.tracking.domain.WorkWeek;
@@ -47,10 +48,23 @@ public record WeekView(
         public boolean isRange() {
             return startTime != null;
         }
+
+        public String colour() {
+            return ProjectColour.of(projectId);
+        }
     }
 
     public List<LocalDate> days() {
         return week.days();
+    }
+
+    /** Days that have entries, newest first, as the day list shows them. */
+    public List<LocalDate> loggedDays() {
+        return week.days().reversed().stream().filter(day -> !entriesByDay.get(day).isEmpty()).toList();
+    }
+
+    public int dayTotal(LocalDate day) {
+        return dayTotals.get(week.days().indexOf(day));
     }
 
     public boolean submitted() {
