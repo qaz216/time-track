@@ -99,7 +99,18 @@ Entries are the source of truth; the grid (task × day) is a read-only rollup. E
 - The task picker has focus when the page loads. Type a letter, Tab, time, Tab, note, Enter. After adding, the cursor sits in the time field with the same task and day, ready for the next entry.
 - `n` jumps to a new entry, `[` and `]` move between weeks, and `Esc` cancels an edit.
 - Bad input comes back with a message and exactly what you typed.
-- Plain HTML forms, post/redirect/get, and about 40 lines of JavaScript. No front-end build, no SPA.
+- Plain HTML forms, post/redirect/get, and under 100 lines of JavaScript. No front-end build, no SPA.
+
+### Timer
+
+Pick a task and press *Start timer* (or `t`). A chip in the header shows it ticking on every page, and `t` or *Stop* logs it.
+
+- **It lives on the server**, as one `running_timer` row per person (the primary key enforces that). Closing the tab, restarting the laptop or switching devices doesn't lose it.
+- **Stopping isn't special.** The time is cut at midnight ([`TimerSplit`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimerSplit.java)) and each piece goes through the same `TimesheetService.addEntry` as typed time, so the same rules, daily cap and audit apply. Times are taken from the wall clock, truncated to the minute, exactly as you'd write them down.
+- **Starting a different task while one is running** stops and logs the first, so switching is one action.
+- **Forgotten timers:** after 10 hours the chip changes to *Review*. The week page then asks when you actually stopped, before logging anything, or lets you discard it. A timer left overnight becomes one entry per day.
+- **If the time can't be logged** (that week got submitted or locked while it ran), the stop is refused and the timer keeps running, so nothing is silently lost. You can then discard it.
+- Timer starts and stops aren't audited themselves. What gets audited is the entries they create, because that's the data that matters.
 
 ### Authentication: form login and server sessions
 

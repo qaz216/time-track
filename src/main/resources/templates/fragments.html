@@ -15,6 +15,16 @@
         <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/weeks}">Team weeks</a>
         <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/period}">Close period</a>
     </nav>
+    <div th:if="${timer != null}" class="timer-chip" th:classappend="${timer.longRunning()} ? 'warn'" role="status">
+        <span class="dot" aria-hidden="true"></span>
+        <span th:text="${timer.taskLabel()}">ACME · Dev</span>
+        <strong id="timer-elapsed" th:attr="data-started=${timer.startedAt().toEpochMilli()}"
+                th:text="${@fmt.total(timer.elapsedMinutes())}">0:42</strong>
+        <form th:unless="${timer.longRunning()}" id="timer-stop" th:action="@{/timer/stop}" method="post">
+            <button type="submit" title="Stop and log  ( t )">Stop</button>
+        </form>
+        <a th:if="${timer.longRunning()}" th:href="@{/} + '#timer-review'">Review</a>
+    </div>
     <form class="signout" th:action="@{/logout}" method="post">
         <span class="muted" sec:authentication="principal.displayName">Name</span>
         <button type="submit" class="link">Sign out</button>

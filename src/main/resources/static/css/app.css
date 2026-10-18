@@ -135,3 +135,19 @@ a.button.primary { background: var(--accent); border-color: var(--accent); color
 .team td.draft { color: var(--text); }
 .team td.missing { color: #b5bac4; }
 .team .status { font-size: 0.8rem; }
+
+/* ---- timer ---- */
+.timer-chip { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.4rem 0.25rem 0.7rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.85rem; background: var(--bg); }
+.timer-chip strong { font-variant-numeric: tabular-nums; }
+.timer-chip form { margin: 0; }
+.timer-chip button { padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.8rem; }
+.timer-chip .dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--danger); animation: pulse 1.6s infinite; }
+.timer-chip.warn { border-color: #e7b416; background: #fff8e1; }
+@keyframes pulse { 50% { opacity: 0.3; } }
+@media (prefers-reduced-motion: reduce) { .timer-chip .dot { animation: none; } }
+.alert-card { border-color: #e7b416; background: #fff8e1; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.alert-card h2 { font-size: 1rem; margin: 0; }
+.alert-card p, .alert-card form { margin: 0; }
+.topbar { flex-wrap: wrap; }
+.timer-chip > span:not(.dot) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 16rem; }
+@media (max-width: 600px) { .timer-chip { order: 10; width: 100%; } .timer-chip > span:not(.dot) { flex: 1; } }

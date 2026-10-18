@@ -31,6 +31,24 @@
     </div>
 
     <p th:if="${error}" class="alert error" role="alert" th:text="${error}">Couldn't read that.</p>
+    <p th:if="${notice}" class="alert" role="status" th:text="${notice}">Nothing was logged.</p>
+
+    <section th:if="${ownWeek and timer != null and timer.longRunning()}" id="timer-review" class="card alert-card">
+        <h2>Your timer has been running since <span th:text="${@fmt.moment(timer.startedAt())}">Wed 14 Oct, 22:30</span></h2>
+        <p>That's <strong th:text="${@fmt.total(timer.elapsedMinutes())}">16:20</strong> on
+            <span th:text="${timer.taskLabel()}">ACME · Dev</span>. If you forgot it, say when you actually stopped.
+            Time past midnight is split into one entry per day.</p>
+        <form th:action="@{/timer/stop}" method="post" class="inline-form">
+            <label>Stopped at
+                <input type="datetime-local" name="stoppedAt" required step="60"
+                       th:value="${timer.nowLocal()}" th:min="${timer.startedLocal()}" th:max="${timer.nowLocal()}">
+            </label>
+            <button type="submit" class="primary">Stop and log</button>
+        </form>
+        <form th:action="@{/timer/discard}" method="post" data-confirm="Throw this timer away without logging anything?">
+            <button type="submit" class="danger">Discard timer</button>
+        </form>
+    </section>
 
     <form th:if="${view.canEditAnyDay()}" id="quick-add" class="quick-add card" th:action="@{/entries}" method="post"
           autocomplete="off">
@@ -55,6 +73,9 @@
             <input name="note" maxlength="500" autocomplete="off" th:value="${form.note()}">
         </label>
         <button type="submit" class="primary">Add</button>
+        <button type="submit" id="timer-start" th:formaction="@{/timer/start}" formnovalidate
+                th:text="${timer != null} ? 'Switch timer' : 'Start timer'"
+                title="Start a timer on this task  ( t )">Start timer</button>
     </form>
     <p th:if="${ownWeek and !view.canEditAnyDay()}" class="alert">
         <span th:if="${view.submitted()}">

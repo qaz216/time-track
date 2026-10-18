@@ -41,3 +41,30 @@ document.addEventListener('submit', (event) => {
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[autofocus]')?.focus();
 });
+
+// Running timer: tick the header chip every few seconds; "t" stops it, or starts one from the entry form.
+(() => {
+    const elapsed = document.getElementById('timer-elapsed');
+    if (elapsed) {
+        const started = Number(elapsed.dataset.started);
+        const tick = () => {
+            const minutes = Math.max(0, Math.floor((Date.now() - started) / 60000));
+            elapsed.textContent = Math.floor(minutes / 60) + ':' + String(minutes % 60).padStart(2, '0');
+        };
+        tick();
+        setInterval(tick, 5000);
+    }
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 't' || event.target.closest('input, textarea, select, [contenteditable]')
+                || event.ctrlKey || event.metaKey || event.altKey) {
+            return;
+        }
+        const stop = document.getElementById('timer-stop');
+        const start = document.getElementById('timer-start');
+        if (stop) {
+            stop.requestSubmit();
+        } else if (start) {
+            start.click();
+        }
+    });
+})();

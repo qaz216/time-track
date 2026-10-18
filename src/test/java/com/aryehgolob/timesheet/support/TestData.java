@@ -77,6 +77,17 @@ public class TestData {
         jdbc.update("update app_user set active = false where id = ?", userId);
     }
 
+    /** A timer that started at a chosen moment, as if the user pressed Start back then. */
+    public void timerStartedAt(long userId, long taskId, java.time.Instant startedAt) {
+        jdbc.update("insert into running_timer (user_id, task_id, started_at) values (?, ?, ?)",
+                userId, taskId, startedAt.atOffset(java.time.ZoneOffset.UTC));
+    }
+
+    public boolean hasTimer(long userId) {
+        return jdbc.queryForObject("select exists (select 1 from running_timer where user_id = ?)",
+                Boolean.class, userId);
+    }
+
     public void archiveTask(long taskId) {
         jdbc.update("update task set active = false where id = ?", taskId);
     }

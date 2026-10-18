@@ -47,12 +47,14 @@ public class TimesheetService {
 
     /** Users log time for themselves only, so the owner is always the actor. */
     public long addEntry(Actor actor, long taskId, LocalDate date, String timeText, String noteText) {
+        return addEntry(actor, taskId, date, TimeInput.parse(timeText), noteText);
+    }
+
+    /** Same rules, for callers that already have a parsed time (the timer). */
+    public long addEntry(Actor actor, long taskId, LocalDate date, TimeInput time, String noteText) {
         checkCanChange(actor, actor.userId(), date);
-        TimeInput time = TimeInput.parse(timeText);
         String note = cleanNote(noteText);
-        if (!catalog.isOpenForTime(taskId)) {
-            throw new InvalidInputException("That task is archived or doesn't exist.");
-        }
+        requireOpenTask(taskId);
         DailyLimit.check((int) entries.minutesOn(actor.userId(), date), time.minutes());
 
         TimeEntry entry = entries.save(new TimeEntry(actor.userId(), taskId, date, time, note, now()));
@@ -89,7 +91,13 @@ public class TimesheetService {
         audit.record(actor, AUDIT_TYPE, entryId, "DELETE", entry.snapshot(), null);
     }
 
-    private void checkCanChange(Actor actor, long ownerId, LocalDate date) {
+    void requireOpenTask(long taskId) {
+        if (!catalog.isOpenForTime(taskId)) {
+            throw new InvalidInputException("That task is archived or doesn't exist.");
+        }
+    }
+
+    void checkCanChange(Actor actor, long ownerId, LocalDate date) {
         boolean submitted = submissions.isSubmitted(ownerId, WorkWeek.containing(date));
         EditPolicy.canChangeEntry(actor, ownerId, date, submitted, locks.current()).orThrow();
     }
