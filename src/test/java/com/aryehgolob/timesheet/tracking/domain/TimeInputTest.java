@@ -53,7 +53,7 @@ class TimeInputTest {
     @Test
     void decimalHoursThatAreNotWholeMinutesAreRejectedWithASuggestion() {
         assertThatThrownBy(() -> TimeInput.parse("1.33"))
-                .isInstanceOf(InvalidTimeInputException.class)
+                .isInstanceOf(InvalidInputException.class)
                 .hasMessageContaining("79.8 minutes")
                 .hasMessageContaining("Did you mean 1:20?");
     }
@@ -76,14 +76,14 @@ class TimeInputTest {
             """)
     void rejectsNonsenseWithAHelpfulMessage(String typed, String messagePart) {
         assertThatThrownBy(() -> TimeInput.parse(typed))
-                .isInstanceOf(InvalidTimeInputException.class)
+                .isInstanceOf(InvalidInputException.class)
                 .hasMessageContaining(messagePart);
     }
 
     @Test
     void aRangeCannotBeConstructedAcrossMidnight() {
         assertThatThrownBy(() -> new TimeInput(120, LocalTime.of(23, 0)))
-                .isInstanceOf(InvalidTimeInputException.class)
+                .isInstanceOf(InvalidInputException.class)
                 .hasMessageContaining("midnight");
     }
 
@@ -104,7 +104,7 @@ class TimeInputTest {
         DailyLimit.check(1380, 60);
 
         assertThatThrownBy(() -> DailyLimit.check(1380, 61))
-                .isInstanceOf(InvalidTimeInputException.class)
+                .isInstanceOf(InvalidInputException.class)
                 .hasMessageContaining("24:01");
     }
 }

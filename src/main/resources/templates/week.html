@@ -3,9 +3,130 @@
 <head th:replace="~{fragments :: head('My week')}"></head>
 <body>
 <header th:replace="~{fragments :: header}"></header>
-<main class="page">
-    <h1>My week</h1>
-    <p class="muted">Signed in as <span th:text="${user.displayName}">Name</span>.</p>
+<main class="page" th:with="weekStart=${view.week().start()}">
+
+    <div class="week-head">
+        <div>
+            <h1>Week of <span th:text="${@fmt.date(weekStart)}">12 Oct 2026</span></h1>
+            <nav class="week-nav" aria-label="Weeks">
+                <a id="prev-week" th:href="@{/(week=${view.week().previous().start()})}" title="Previous week  ( [ )">&larr; Previous</a>
+                <a th:href="@{/}">This week</a>
+                <a id="next-week" th:href="@{/(week=${view.week().next().start()})}" title="Next week  ( ] )">Next &rarr;</a>
+            </nav>
+        </div>
+        <div class="week-status">
+            <span th:if="${view.submitted()}" class="badge ok">Submitted</span>
+            <span th:unless="${view.submitted()}" class="badge">Draft</span>
+            <strong class="week-total" th:text="${@fmt.total(view.total())}">38:30</strong>
+        </div>
+    </div>
+
+    <p th:if="${error}" class="alert error" role="alert" th:text="${error}">Couldn't read that.</p>
+
+    <form th:if="${view.canEditAnyDay()}" id="quick-add" class="quick-add card" th:action="@{/entries}" method="post"
+          autocomplete="off">
+        <label>Task
+            <select id="qa-task" name="taskId" required th:autofocus="${form.taskId() == null}">
+                <option value="">Choose a task…</option>
+                <option th:each="t : ${tasks}" th:value="${t.id()}" th:text="${t.label()}"
+                        th:selected="${form.taskId() != null and form.taskId() == t.id()}">ACME · Dev</option>
+            </select>
+        </label>
+        <label>Day
+            <select name="date">
+                <option th:each="d : ${view.days()}" th:if="${view.canEdit(d)}" th:value="${d}"
+                        th:text="${@fmt.day(d)}" th:selected="${d == form.date()}">Mon 12 Oct</option>
+            </select>
+        </label>
+        <label>Time
+            <input name="time" required autocomplete="off" placeholder="1:30 · 90m · 9:00-10:30"
+                   th:value="${form.time()}" th:autofocus="${form.taskId() != null}">
+        </label>
+        <label class="grow">Note
+            <input name="note" maxlength="500" autocomplete="off" th:value="${form.note()}">
+        </label>
+        <button type="submit" class="primary">Add</button>
+    </form>
+    <p th:unless="${view.canEditAnyDay()}" class="alert">
+        <span th:if="${view.submitted()}">This week is submitted and read-only.</span>
+        <span th:unless="${view.submitted()}">This week is closed by finance.</span>
+    </p>
+
+    <div class="grid-wrap card">
+    <table class="grid">
+        <thead>
+        <tr>
+            <th scope="col">Task</th>
+            <th scope="col" th:each="d : ${view.days()}" th:classappend="${d == today} ? 'today'"
+                th:text="${@fmt.shortDay(d)}">Mon 12</th>
+            <th scope="col" class="total">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${view.rows()}">
+            <th scope="row" th:text="${row.label()}">ACME · Dev</th>
+            <td th:each="m : ${row.minutesPerDay()}" th:text="${@fmt.minutes(m)}">1:30</td>
+            <td class="total" th:text="${@fmt.total(row.total())}">7:30</td>
+        </tr>
+        <tr th:if="${view.rows().isEmpty()}">
+            <td colspan="9" class="muted empty">Nothing logged this week yet.</td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <th scope="row">Total</th>
+            <td th:each="m : ${view.dayTotals()}" th:text="${@fmt.minutes(m)}">7:30</td>
+            <td class="total" th:text="${@fmt.total(view.total())}">38:30</td>
+        </tr>
+        </tfoot>
+    </table>
+    </div>
+
+    <section class="days">
+        <article class="day" th:each="d, s : ${view.days()}" th:with="lines=${view.entriesByDay().get(d)}"
+                 th:classappend="${d == today} ? 'today'">
+            <h2>
+                <span th:text="${@fmt.day(d)}">Mon 12 Oct</span>
+                <span class="muted" th:text="${@fmt.minutes(view.dayTotals()[s.index])}">7:30</span>
+                <span th:if="${view.locked(d)}" class="badge">Locked</span>
+            </h2>
+            <ul class="entries" th:unless="${lines.isEmpty()}">
+                <li th:each="e : ${lines}">
+                    <th:block th:if="${editId == null or editId != e.id() or !view.canEdit(d)}">
+                        <span class="range" th:text="${e.isRange()} ? ${e.asTyped()} : ''">09:05-10:42</span>
+                        <span class="duration" th:text="${@fmt.total(e.minutes())}">1:37</span>
+                        <span class="task" th:text="${e.taskLabel()}">ACME · Dev</span>
+                        <span class="note" th:text="${e.note()}">Standup</span>
+                        <span class="actions" th:if="${view.canEdit(d)}">
+                            <a th:href="@{/(week=${weekStart}, edit=${e.id()})}">Edit</a>
+                            <form th:action="@{/entries/{id}/delete(id=${e.id()})}" method="post"
+                                  data-confirm="Delete this entry?">
+                                <input type="hidden" name="week" th:value="${weekStart}">
+                                <button type="submit" class="link danger">Delete</button>
+                            </form>
+                        </span>
+                    </th:block>
+                    <form th:if="${editId != null and editId == e.id() and view.canEdit(d)}" class="edit-entry"
+                          th:action="@{/entries/{id}(id=${e.id()})}" method="post">
+                        <input type="hidden" name="version" th:value="${e.version()}">
+                        <input type="hidden" name="week" th:value="${weekStart}">
+                        <span class="task" th:text="${e.taskLabel()}">ACME · Dev</span>
+                        <input name="time" required autofocus autocomplete="off" aria-label="Time"
+                               th:value="${editTime != null} ? ${editTime} : ${e.asTyped()}">
+                        <input name="note" maxlength="500" autocomplete="off" aria-label="Note" class="grow"
+                               th:value="${editTime != null} ? ${editNote} : ${e.note()}">
+                        <button type="submit" class="primary">Save</button>
+                        <a id="cancel-edit" th:href="@{/(week=${weekStart})}">Cancel</a>
+                        <p th:if="${editError}" class="alert error full" role="alert" th:text="${editError}">Error</p>
+                    </form>
+                </li>
+            </ul>
+        </article>
+    </section>
+
+    <p class="shortcuts muted">
+        Keys: <kbd>n</kbd> new entry · <kbd>[</kbd> <kbd>]</kbd> previous / next week · <kbd>Esc</kbd> cancel
+    </p>
 </main>
 </body>
 </html>

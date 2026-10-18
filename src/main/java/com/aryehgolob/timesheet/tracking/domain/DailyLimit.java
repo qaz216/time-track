@@ -13,7 +13,7 @@ public final class DailyLimit {
     public static void check(int otherMinutes, int newMinutes) {
         int total = otherMinutes + newMinutes;
         if (total > TimeInput.MINUTES_PER_DAY) {
-            throw new InvalidTimeInputException("That makes " + TimeInput.format(total)
+            throw new InvalidInputException("That makes " + TimeInput.format(total)
                     + " on this day. A day can hold at most 24:00.");
         }
     }

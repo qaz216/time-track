@@ -34,6 +34,7 @@ a { color: var(--accent); }
 .signout { display: flex; align-items: center; gap: 0.75rem; margin: 0; }
 
 .page { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+@media (max-width: 600px) { .page { padding: 1rem; } .topbar { padding: 0.75rem 1rem; gap: 1rem; } }
 
 .center { min-height: 100vh; display: grid; place-items: center; }
 .card {
@@ -73,3 +74,46 @@ button.link { border: 0; background: none; padding: 0; color: var(--accent); }
 
 .alert { padding: 0.6rem 0.8rem; border-radius: 6px; background: #eef2ff; margin: 0 0 1rem; }
 .alert.error { background: #fdecea; color: var(--danger); }
+
+/* ---- week page ---- */
+.week-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.week-head h1 { margin-bottom: 0.4rem; }
+.week-nav { display: flex; gap: 1rem; font-size: 0.9rem; }
+.week-status { display: flex; align-items: center; gap: 0.75rem; }
+.week-total { font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+
+.badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: #eceff4; color: var(--muted); vertical-align: middle; }
+.badge.ok { background: #e3f4ea; color: var(--ok); }
+
+.quick-add { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; }
+.quick-add .grow, .edit-entry .grow { flex: 1; min-width: 12rem; }
+.quick-add input[name=time] { width: 12rem; }
+
+.grid-wrap { padding: 0; margin-bottom: 1.5rem; overflow-x: auto; }
+.grid { width: 100%; min-width: 40rem; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.grid th, .grid td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); text-align: right; }
+.grid th:first-child { text-align: left; font-weight: 500; }
+.grid thead th { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.grid thead th.today { color: var(--accent); }
+.grid tfoot th, .grid tfoot td, .grid .total { font-weight: 600; }
+.grid tfoot th, .grid tfoot td { border-bottom: 0; }
+.grid td.empty { text-align: left; }
+
+.days { display: grid; gap: 0.75rem; }
+.day { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; }
+.day.today { border-color: var(--accent); }
+.day h2 { font-size: 0.95rem; margin: 0; display: flex; gap: 0.6rem; align-items: center; }
+.entries { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+.entries li { display: flex; align-items: center; gap: 0.75rem; padding: 0.35rem 0; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.entries .range { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 6.5rem; }
+.entries .duration { font-weight: 600; font-variant-numeric: tabular-nums; min-width: 3rem; }
+.entries .note { color: var(--muted); flex: 1; }
+.entries .actions { display: flex; gap: 0.75rem; font-size: 0.85rem; }
+.entries .actions form { margin: 0; }
+.edit-entry { display: flex; align-items: center; gap: 0.6rem; flex: 1; flex-wrap: wrap; margin: 0; }
+.edit-entry input[name=time] { width: 9rem; }
+.edit-entry .full { flex-basis: 100%; margin: 0.25rem 0 0; }
+
+button.danger, .link.danger { color: var(--danger); }
+.shortcuts { font-size: 0.8rem; margin-top: 1.5rem; }
+kbd { font: 0.75rem ui-monospace, monospace; padding: 0.05rem 0.35rem; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; background: var(--surface); }

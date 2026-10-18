@@ -26,6 +26,42 @@ Run the tests (needs Docker running, for Testcontainers):
 
 _Work in progress. This section walks through what I built, what I cut and why._
 
+### Time is exact minutes. No increments, no rounding.
+
+The spec says "increments of your choosing." I chose **one minute**, and I push back on rounding at all. A timesheet should record what happened. Billing increments ("round up to 6 minutes for this client") are an invoicing rule, invoicing is out of scope, and when it exists it should round once, per client contract, at billing time. If rounding were baked into the data, you could never undo it.
+
+- Stored as an `integer` number of minutes. Floats never touch the database.
+- You can type `1:07`, `67m`, `1h 7m`, `1.5h` or a clock range like `9:05-10:42` ([`TimeInput`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimeInput.java)). A range also keeps its start time; the end is derived, so the two can't disagree.
+- Decimal hours that aren't a whole minute are rejected, not silently rounded: `1.33` → "79.8 minutes, not a whole minute. Did you mean 1:20?"
+- A day can hold at most 24:00 across all your entries. Anything more is a typo.
+
+### One place for the rules
+
+Every "may I change this?" question goes to [`EditPolicy`](src/main/java/com/aryehgolob/timesheet/tracking/domain/EditPolicy.java), which is plain Java with a test table for each rule. [`TimesheetService`](src/main/java/com/aryehgolob/timesheet/tracking/TimesheetService.java) is the only code that writes entries, and every use case does the same five things in one transaction: load, ask the policy, validate, save, audit. The week page asks the same policy which days to make editable, so the UI and the server can't disagree.
+
+- **Only you can change your hours, admins included.** A timesheet is that person's statement. An admin who spots a mistake sends the week back (see submit) rather than editing someone else's time.
+- **Guessing another user's entry id gets you a 403**, and there's a test that tries it.
+- **Two tabs editing the same entry:** the second save is refused, using a version number (optimistic locking), instead of silently overwriting the first.
+
+### Audit trail: hard delete plus an append-only log
+
+Entries are really deleted, and every create, update and delete writes an `audit_event` row with JSON `before` and `after` snapshots and who did it.
+
+- **Why not soft delete?** Every query would need `where deleted = false` forever, and forgetting it once double-counts billable hours. The history lives in the log, not in the live table.
+- **Why not event sourcing?** Too much machinery for 40 people. The question finance actually asks is "who changed this, and from what?", and one table answers it.
+- **The audit row can't be skipped or orphaned.** [`AuditLog`](src/main/java/com/aryehgolob/timesheet/audit/AuditLog.java) requires an existing transaction (`Propagation.MANDATORY`), so the change and its audit row commit together or not at all. A test calls it outside a transaction and expects it to fail.
+- An edit that changes nothing writes nothing.
+- **Cut:** a UI for browsing the log. The data is there, and it's one query away.
+
+### The week page
+
+Entries are the source of truth; the grid (task × day) is a read-only rollup. Entry is keyboard-first:
+
+- The task picker has focus when the page loads. Type a letter, Tab, time, Tab, note, Enter. After adding, the cursor sits in the time field with the same task and day, ready for the next entry.
+- `n` jumps to a new entry, `[` and `]` move between weeks, and `Esc` cancels an edit.
+- Bad input comes back with a message and exactly what you typed.
+- Plain HTML forms, post/redirect/get, and about 40 lines of JavaScript. No front-end build, no SPA.
+
 ### Authentication: form login and server sessions
 
 Email and password, BCrypt hashes, a session cookie, CSRF protection on every form.
