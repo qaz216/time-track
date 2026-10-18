@@ -34,7 +34,7 @@ Run the tests (needs Docker running, for Testcontainers):
 
 ## A two-minute tour
 
-1. **Sign in as Sam.** The cursor is in "What have you worked on?". Type anything, Tab to **Project**, type `fin`, Enter, Tab, `9:05-10:42`, Enter. Add another with `1.5`: the project and day are kept. Now try `1.33`.
+1. **Sign in as Sam.** The cursor is in "What have you worked on?". Type anything, Tab to **Project**, type `fin`, Enter, Tab, `9:05-10:42`, Enter. Add another with `1.5`: the project and day are kept. Durations show as h:mm:ss, like Clockify.
 2. Click the clock icon at the right of the bar to switch to timer mode, then START (or press `t`). It ticks in the bar and in the header on every page; STOP or `t` logs it.
 3. Click **Submit week**. The week goes read-only; **Reopen** brings it back.
 4. **Sign in as the admin** and open **Team weeks**: everyone × every week, ✓ for submitted, with Jo's missing week easy to spot. Click a cell to see that week, then **Export CSV**.
@@ -61,7 +61,7 @@ Run the tests (needs Docker running, for Testcontainers):
 
 | Spec | What I did | Why |
 |---|---|---|
-| "Increments of your choosing" | **One minute, no rounding** | Rounding is a billing rule, and billing is out of scope. Rounded data can't be un-rounded. |
+| "Increments of your choosing" | **Exact seconds, no rounding** | Rounding is a billing rule, and billing is out of scope. Rounded data can't be un-rounded. |
 | "Edit and delete; audit trail is your call" | **Hard delete plus an append-only audit log** | Soft delete puts a `where deleted = false` trap in every query that sums billable hours. |
 | "Weekly submit step" | **Submit and reopen, no approval** | For 40 people the control that matters is finance closing the books, and that's the lock. |
 | (implied) admin power | **Admins can't edit other people's hours** | A timesheet is that person's statement. Admins send a week back instead. |
@@ -69,20 +69,20 @@ Run the tests (needs Docker running, for Testcontainers):
 
 ## Data model
 
-Eight tables in two readable migrations: [`V1__schema.sql`](src/main/resources/db/migration/V1__schema.sql) and [`V2__default_tasks.sql`](src/main/resources/db/migration/V2__default_tasks.sql).
+Eight tables, built by three small migrations: [`V1__schema.sql`](src/main/resources/db/migration/V1__schema.sql) (the model), [`V2__default_tasks.sql`](src/main/resources/db/migration/V2__default_tasks.sql) (log against a project directly) and [`V3__seconds.sql`](src/main/resources/db/migration/V3__seconds.sql) (exact seconds).
 
 | Table | Holds | Notes |
 |---|---|---|
 | `app_user` | people, `USER` or `ADMIN` | Deactivated, never deleted |
 | `project`, `task` | what time is logged against | Archived, never deleted, so old entries always resolve. A project can have a hidden *default task* (`is_default`), so time can be logged against just the project |
-| `time_entry` | user, task, `work_date`, `minutes`, optional `start_time`, note, `version` | The only time data |
+| `time_entry` | user, task, `work_date`, `seconds`, optional `start_time`, note, `version` | The only time data |
 | `week_submission` | (user, Monday) | A row means submitted; no row means draft |
 | `period_lock` | one `locked_through` date | A single row (`id = 1`, check-constrained) |
 | `running_timer` | one per user | The primary key is the "one timer each" rule |
 | `audit_event` | who, what, when, JSON before/after | Append-only |
 
 **The database enforces what must never be wrong:**
-- `minutes` between 1 and 1440.
+- `seconds` between 1 and 86,400 (one day).
 - A clock range can't cross midnight.
 - A week starts on a Monday.
 - One lock, one timer per person.
@@ -118,13 +118,14 @@ The seams worth looking at:
 
 ## Decisions in detail
 
-### Time is exact minutes
+### Time is exact seconds
 
-- Stored as an `integer` number of minutes. Floats never touch the database.
-- You can type `1:07`, `67m`, `1h 7m`, `1.5h` or a clock range like `9:05-10:42` ([`TimeInput`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimeInput.java)). A range also keeps its start time. The end is derived from start plus minutes, so the two can't disagree.
-- Decimal hours that aren't a whole minute are rejected, not silently rounded: `1.33` → "79.8 minutes, not a whole minute. Did you mean 1:20?"
-- A day can hold at most 24:00 across all your entries. Anything more is a typo.
-- When invoicing exists, client-specific rounding ("6-minute increments") should happen there, once, from these exact minutes.
+- Stored as an `integer` number of seconds, like Clockify. Floats never touch the database. (It started as minutes; a timer then couldn't tell 5 seconds from 59, so [`V3__seconds.sql`](src/main/resources/db/migration/V3__seconds.sql) converts it, exactly.)
+- Shown as `h:mm:ss` everywhere (`0:00:47`, `7:45:00`), so a duration can never be misread as a time of day or as minutes.
+- You can type `1:07`, `1:07:30`, `67m`, `1h 7m`, `45s`, `1.5h` or a clock range like `9:05-10:42` (seconds optional) ([`TimeInput`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimeInput.java)). A range also keeps its start time. The end is derived from start plus seconds, so the two can't disagree.
+- Decimal hours are taken exactly (`1.33` is 1:19:48). One that isn't a whole second is rejected, not silently rounded: `1.00001` → "3600.036 seconds, not a whole second. Did you mean 1:00:00?"
+- A day can hold at most 24:00:00 across all your entries. Anything more is a typo.
+- When invoicing exists, client-specific rounding ("6-minute increments") should happen there, once, from these exact seconds.
 
 ### Who can change what
 
@@ -165,11 +166,11 @@ A week is a **draft** until you press *Submit week*; then it's read-only. You ca
 **Export CSV:**
 
 ```
-email,name,week_start,week_status,client,project_code,project,task,billable,minutes,hours
-jo@example.com,Jo Chen,2026-09-28,submitted,CTG,CTG,CTG,Financial Management,yes,2025,33.75
+email,name,week_start,week_status,client,project_code,project,task,billable,seconds,hours
+jo@example.com,Jo Chen,2026-09-28,submitted,CTG,CTG-02,Financial Management,General,yes,121500,33.75
 ```
 
-- **`minutes` is exact and is the column to reconcile on.** `hours` is the same value to two decimals, for reading.
+- **`seconds` is exact and is the column to reconcile on.** `hours` is the same value to two decimals, for reading.
 - **`week_status` is on every row**, so draft hours can't sneak into an invoice unnoticed.
 - **Escaping:** quoting is done by Apache Commons CSV, not hand-rolled. Cells starting with `= + - @` get a leading `'`, so a project called `=HYPERLINK(...)` can't become a live formula in someone's spreadsheet (formula injection).
 
@@ -195,7 +196,7 @@ The page leads with one bar, modelled on Clockify's tracker:
 ### Timer
 
 - **It lives on the server**, one `running_timer` row per person. Closing the tab, restarting the laptop or switching devices doesn't lose it.
-- **Stopping isn't special.** The time is cut at midnight ([`TimerSplit`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimerSplit.java)), and each piece goes through the same `TimesheetService.addEntry` as typed time, so the same rules, cap and audit apply. Times are the wall clock truncated to the minute, exactly what you'd write down. **Time is never thrown away:** a timer stopped within the minute it started logs 0:01, the smallest amount the timesheet holds.
+- **Stopping isn't special.** The time is cut at midnight ([`TimerSplit`](src/main/java/com/aryehgolob/timesheet/tracking/domain/TimerSplit.java)), and each piece goes through the same `TimesheetService.addEntry` as typed time, so the same rules, cap and audit apply. It records exactly how long it ran, to the second (start and stop times are the office wall clock). **Time is never thrown away:** a timer stopped within the second it started logs 0:00:01.
 - **Starting another task while one runs** stops and logs the first, so switching is one action.
 - **Forgotten timers:** after 10 hours the chip says *Review*, and the week page asks when you really stopped before logging anything, or lets you discard it.
 - **If the time can't be logged** (the week was submitted or locked while it ran), the stop is refused and the timer keeps running, so nothing is silently lost.

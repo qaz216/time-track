@@ -19,7 +19,7 @@ class TimerModel {
 
     /** What the header chip and the "forgot it?" panel need. */
     record TimerView(String taskLabel, String note, Instant startedAt, LocalDateTime startedLocal,
-            LocalDateTime nowLocal, int elapsedMinutes, boolean longRunning) {
+            LocalDateTime nowLocal, long elapsedSeconds, boolean longRunning) {
     }
 
     private final TimerService timers;
@@ -40,7 +40,7 @@ class TimerModel {
                 .map((RunningTimer t) -> new TimerView(t.taskLabel(), t.note(), t.startedAt(),
                         LocalDateTime.ofInstant(t.startedAt(), clock.getZone()).truncatedTo(ChronoUnit.MINUTES),
                         LocalDateTime.now(clock).truncatedTo(ChronoUnit.MINUTES),
-                        t.elapsedMinutes(now), t.isLongRunning(now)))
+                        t.elapsedSeconds(now), t.isLongRunning(now)))
                 .orElse(null);
     }
 }

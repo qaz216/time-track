@@ -9,6 +9,10 @@ public record RunningTimer(long userId, long taskId, String taskLabel, Instant s
     /** Past this, it was probably forgotten: ask before logging it all. */
     public static final int LONG_RUNNING_MINUTES = 10 * 60;
 
+    public long elapsedSeconds(Instant now) {
+        return Math.max(0, Duration.between(startedAt, now).toSeconds());
+    }
+
     public int elapsedMinutes(Instant now) {
         return (int) Duration.between(startedAt, now).toMinutes();
     }

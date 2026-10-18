@@ -10,7 +10,7 @@ public record TeamOverview(ReportPeriod period, List<Row> rows) {
     public record Row(long userId, String name, String email, boolean active, List<Cell> cells, int total) {
     }
 
-    public record Cell(WorkWeek week, int minutes, boolean submitted) {
+    public record Cell(WorkWeek week, int seconds, boolean submitted) {
     }
 
     public List<WorkWeek> weeks() {
@@ -28,7 +28,7 @@ public record TeamOverview(ReportPeriod period, List<Row> rows) {
         return rows.stream()
                 .flatMap(row -> row.cells().stream())
                 .filter(cell -> cell.week().equals(week))
-                .mapToInt(Cell::minutes)
+                .mapToInt(Cell::seconds)
                 .sum();
     }
 }

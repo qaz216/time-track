@@ -44,14 +44,14 @@
                     <span th:text="${row.name()}">Sam Rivera</span>
                     <span th:unless="${row.active()}" class="badge">left</span>
                 </th>
-                <td th:each="c : ${row.cells()}" th:classappend="${c.submitted()} ? 'in' : (${c.minutes() == 0} ? 'missing' : 'draft')">
+                <td th:each="c : ${row.cells()}" th:classappend="${c.submitted()} ? 'in' : (${c.seconds() == 0} ? 'missing' : 'draft')">
                     <a th:href="@{/admin/users/{id}/weeks(id=${row.userId()}, week=${c.week().start()})}"
                        th:title="${c.submitted()} ? 'Submitted' : 'Not submitted'">
-                        <span th:text="${c.minutes() == 0} ? '—' : ${@fmt.total(c.minutes())}">38:30</span>
+                        <span th:text="${c.seconds() == 0} ? '—' : ${@fmt.duration(c.seconds())}">38:30</span>
                         <span class="status" th:text="${c.submitted()} ? '✓' : ''" aria-hidden="true">✓</span>
                     </a>
                 </td>
-                <td class="total" th:text="${@fmt.total(row.total())}">150:00</td>
+                <td class="total" th:text="${@fmt.duration(row.total())}">150:00</td>
             </tr>
             <tr th:if="${overview.rows().isEmpty()}">
                 <td th:colspan="${overview.weeks().size() + 2}" class="muted empty">Nobody here yet.</td>
@@ -60,7 +60,7 @@
             <tfoot>
             <tr>
                 <th scope="row">Total</th>
-                <td th:each="w : ${overview.weeks()}" th:text="${@fmt.total(overview.weekTotal(w))}">300:00</td>
+                <td th:each="w : ${overview.weeks()}" th:text="${@fmt.duration(overview.weekTotal(w))}">300:00</td>
                 <td></td>
             </tr>
             </tfoot>

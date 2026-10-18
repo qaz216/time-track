@@ -59,8 +59,9 @@ class TimerServiceTest extends IntegrationTest {
         List<Long> ids = timers.stop(sam.asActor(), start.withHour(10).withMinute(42));
 
         assertThat(ids).singleElement().satisfies(id -> {
-            assertThat(data.entry(id).get("minutes")).isEqualTo(97);
-            assertThat(data.entry(id).get("start_time")).isEqualTo(Time.valueOf(LocalTime.of(9, 5)));
+            // 09:05:40 to 10:42:00, exactly
+            assertThat(data.entry(id).get("seconds")).isEqualTo(5780);
+            assertThat(data.entry(id).get("start_time")).isEqualTo(Time.valueOf(LocalTime.of(9, 5, 40)));
         });
         assertThat(data.hasTimer(sam.id())).isFalse();
     }
@@ -75,20 +76,21 @@ class TimerServiceTest extends IntegrationTest {
 
         assertThat(ids).hasSize(2);
         assertThat(data.entry(ids.get(0)).get("work_date")).isEqualTo(Date.valueOf(start.toLocalDate()));
-        assertThat(data.entry(ids.get(0)).get("minutes")).isEqualTo(90);
+        assertThat(data.entry(ids.get(0)).get("seconds")).isEqualTo(5400);
         assertThat(data.entry(ids.get(1)).get("work_date")).isEqualTo(Date.valueOf(start.toLocalDate().plusDays(1)));
-        assertThat(data.entry(ids.get(1)).get("minutes")).isEqualTo(495);
+        assertThat(data.entry(ids.get(1)).get("seconds")).isEqualTo(29700);
         assertThat(data.audit("time_entry", ids.get(1))).extracting(r -> r.get("action")).containsExactly("CREATE");
     }
 
     @Test
-    void aTimerStoppedWithinAMinuteStillLogsOneMinute() {
+    void aShortTimerLogsItsExactSeconds() {
         CurrentUser sam = data.user();
         data.timerStartedAt(sam.id(), data.task(), clock.instant().minusSeconds(20));
 
         List<Long> ids = timers.stop(sam.asActor(), null);
 
-        assertThat(ids).singleElement().satisfies(id -> assertThat(data.entry(id).get("minutes")).isEqualTo(1));
+        assertThat(ids).singleElement().satisfies(id ->
+                assertThat((Integer) data.entry(id).get("seconds")).isBetween(20, 22));
         assertThat(data.hasTimer(sam.id())).isFalse();
     }
 

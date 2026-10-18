@@ -24,7 +24,7 @@ import com.aryehgolob.timesheet.tracking.domain.TimeInput;
 class TimeEntry {
 
     /** What the audit log stores as "before" and "after". */
-    record Snapshot(long userId, long taskId, LocalDate workDate, int minutes, LocalTime startTime, String note) {
+    record Snapshot(long userId, long taskId, LocalDate workDate, int seconds, LocalTime startTime, String note) {
     }
 
     @Id
@@ -34,7 +34,7 @@ class TimeEntry {
     private long userId;
     private long taskId;
     private LocalDate workDate;
-    private int minutes;
+    private int seconds;
     private LocalTime startTime;
     private String note;
 
@@ -51,7 +51,7 @@ class TimeEntry {
         this.userId = userId;
         this.taskId = taskId;
         this.workDate = workDate;
-        this.minutes = time.minutes();
+        this.seconds = time.seconds();
         this.startTime = time.startTime();
         this.note = note;
         this.createdAt = now;
@@ -60,10 +60,10 @@ class TimeEntry {
 
     /** @return false if nothing actually changed (so nothing is written or audited) */
     boolean change(TimeInput time, String note, Instant now) {
-        if (minutes == time.minutes() && Objects.equals(startTime, time.startTime()) && Objects.equals(this.note, note)) {
+        if (seconds == time.seconds() && Objects.equals(startTime, time.startTime()) && Objects.equals(this.note, note)) {
             return false;
         }
-        this.minutes = time.minutes();
+        this.seconds = time.seconds();
         this.startTime = time.startTime();
         this.note = note;
         this.updatedAt = now;
@@ -71,7 +71,7 @@ class TimeEntry {
     }
 
     Snapshot snapshot() {
-        return new Snapshot(userId, taskId, workDate, minutes, startTime, note);
+        return new Snapshot(userId, taskId, workDate, seconds, startTime, note);
     }
 
     Long getId() {
@@ -86,8 +86,8 @@ class TimeEntry {
         return workDate;
     }
 
-    int getMinutes() {
-        return minutes;
+    int getSeconds() {
+        return seconds;
     }
 
     int getVersion() {

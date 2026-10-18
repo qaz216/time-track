@@ -20,7 +20,7 @@
         <span class="dot" aria-hidden="true"></span>
         <span th:text="${timer.taskLabel()}">ACME · Dev</span>
         <strong id="timer-elapsed" th:attr="data-started=${timer.startedAt().toEpochMilli()}"
-                th:text="${@fmt.total(timer.elapsedMinutes())}">0:42</strong>
+                th:text="${@fmt.duration(timer.elapsedSeconds())}">0:42</strong>
         <form th:unless="${timer.longRunning()}" id="timer-stop" th:action="@{/timer/stop}" method="post">
             <button type="submit" title="Stop and log  ( t )">Stop</button>
         </form>

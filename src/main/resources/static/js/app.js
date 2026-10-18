@@ -42,17 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[autofocus]')?.focus();
 });
 
-// Running timer: tick the header chip every few seconds; "t" stops it, or starts one from the entry form.
+// h:mm:ss, the same format the server uses everywhere (TimeInput.format).
+const hms = (startedMillis) => {
+    const s = Math.max(0, Math.floor((Date.now() - startedMillis) / 1000));
+    return Math.floor(s / 3600) + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+};
+
+// Running timer: tick the header chip every second; "t" stops it, or starts one from the entry form.
 (() => {
     const elapsed = document.getElementById('timer-elapsed');
     if (elapsed) {
         const started = Number(elapsed.dataset.started);
-        const tick = () => {
-            const minutes = Math.max(0, Math.floor((Date.now() - started) / 60000));
-            elapsed.textContent = Math.floor(minutes / 60) + ':' + String(minutes % 60).padStart(2, '0');
-        };
+        const tick = () => { elapsed.textContent = hms(started); };
         tick();
-        setInterval(tick, 5000);
+        setInterval(tick, 1000);
     }
     document.addEventListener('keydown', (event) => {
         if (event.key !== 't' || event.target.closest('input, textarea, select, [contenteditable]')

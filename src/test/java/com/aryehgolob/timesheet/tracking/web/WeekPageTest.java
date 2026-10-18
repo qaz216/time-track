@@ -81,9 +81,9 @@ class WeekPageTest extends IntegrationTest {
         mvc.perform(post("/entries").with(user(sam)).with(csrf())
                         .param("taskId", String.valueOf(data.task()))
                         .param("date", WEDNESDAY.toString())
-                        .param("time", "1.33"))
+                        .param("time", "1.00001"))
                 .andExpect(redirectedUrl("/?week=2026-10-12"))
-                .andExpect(flash().attribute("error", containsString("Did you mean 1:20?")));
+                .andExpect(flash().attribute("error", containsString("Did you mean 1:00:00?")));
         assertThat(data.entryCount(sam.id())).isZero();
     }
 
@@ -162,7 +162,7 @@ class WeekPageTest extends IntegrationTest {
                         .param("version", "0").param("time", "8:00").param("week", "2026-10-12"))
                 .andExpect(status().isForbidden());
 
-        assertThat(data.entry(samsEntry).get("minutes")).isEqualTo(60);
+        assertThat(data.entry(samsEntry).get("seconds")).isEqualTo(3600);
     }
 
     @Test

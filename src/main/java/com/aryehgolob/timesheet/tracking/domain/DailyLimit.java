@@ -9,14 +9,14 @@ public final class DailyLimit {
     }
 
     /**
-     * @param otherMinutes minutes already logged that day, excluding the entry being saved
-     * @param newMinutes   minutes of the entry being saved
+     * @param otherSeconds time already logged that day, excluding the entry being saved
+     * @param newSeconds   the entry being saved
      */
-    public static void check(int otherMinutes, int newMinutes) {
-        int total = otherMinutes + newMinutes;
-        if (total > TimeInput.MINUTES_PER_DAY) {
+    public static void check(long otherSeconds, int newSeconds) {
+        long total = otherSeconds + newSeconds;
+        if (total > TimeInput.SECONDS_PER_DAY) {
             throw new InvalidInputException("That makes " + TimeInput.format(total)
-                    + " on this day. A day can hold at most 24:00.");
+                    + " on this day. A day can hold at most 24:00:00.");
         }
     }
 }

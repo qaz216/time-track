@@ -56,7 +56,7 @@ public class TimerService {
      * @param stoppedAt when the work actually ended, if not now (for a timer left
      *                  running overnight); must be between the start and now
      * @return ids of the entries created, one per calendar day (at least one: a
-     *         timer stopped within its first minute logs 0:01)
+     *         timer stopped within its first second logs 0:00:01)
      */
     public List<Long> stop(Actor actor, LocalDateTime stoppedAt) {
         RunningTimer timer = timers.find(actor.userId())
@@ -66,6 +66,9 @@ public class TimerService {
         LocalDateTime end = stoppedAt == null ? now : stoppedAt;
         if (end.isBefore(started.truncatedTo(ChronoUnit.MINUTES)) || end.isAfter(now)) {
             throw new InvalidInputException("The stop time must be between when the timer started and now.");
+        }
+        if (end.isBefore(started)) {
+            end = started; // a minute-precise stop time typed into the timer's first minute
         }
 
         timers.remove(actor.userId());

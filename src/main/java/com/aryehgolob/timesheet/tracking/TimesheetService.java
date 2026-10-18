@@ -55,7 +55,7 @@ public class TimesheetService {
         checkCanChange(actor, actor.userId(), date);
         String note = cleanNote(noteText);
         requireOpenTask(taskId);
-        DailyLimit.check((int) entries.minutesOn(actor.userId(), date), time.minutes());
+        DailyLimit.check(entries.secondsOn(actor.userId(), date), time.seconds());
 
         TimeEntry entry = entries.save(new TimeEntry(actor.userId(), taskId, date, time, note, now()));
         audit.record(actor, AUDIT_TYPE, entry.getId(), "CREATE", null, entry.snapshot());
@@ -74,8 +74,8 @@ public class TimesheetService {
         }
         TimeInput time = TimeInput.parse(timeText);
         String note = cleanNote(noteText);
-        int otherMinutes = (int) entries.minutesOn(entry.getUserId(), entry.getWorkDate()) - entry.getMinutes();
-        DailyLimit.check(otherMinutes, time.minutes());
+        long otherSeconds = entries.secondsOn(entry.getUserId(), entry.getWorkDate()) - entry.getSeconds();
+        DailyLimit.check(otherSeconds, time.seconds());
 
         TimeEntry.Snapshot before = entry.snapshot();
         if (entry.change(time, note, now())) {

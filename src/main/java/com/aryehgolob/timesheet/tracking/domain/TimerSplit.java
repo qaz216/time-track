@@ -8,11 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Turns a stopped timer into entries. Times are taken as the wall clock shows
- * them, truncated to the minute (the same thing you'd write down by hand), and
- * a timer that runs past midnight becomes one entry per day. Time is never
- * thrown away: a timer stopped within the minute it started logs 0:01, the
- * smallest amount a timesheet holds.
+ * Turns a stopped timer into entries, exact to the second, with one entry per
+ * calendar day when it runs past midnight. Times are wall-clock times in the
+ * office zone. Time is never thrown away: a timer stopped within the second it
+ * started logs 0:00:01.
  */
 public final class TimerSplit {
 
@@ -24,8 +23,8 @@ public final class TimerSplit {
 
     /** @return the pieces in date order; never empty */
     public static List<Piece> split(LocalDateTime started, LocalDateTime stopped) {
-        LocalDateTime from = started.truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime to = stopped.truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime from = started.truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime to = stopped.truncatedTo(ChronoUnit.SECONDS);
         if (to.isBefore(from)) {
             throw new IllegalArgumentException("Timer stopped before it started");
         }
@@ -34,12 +33,12 @@ public final class TimerSplit {
         while (from.isBefore(to)) {
             LocalDateTime midnight = from.toLocalDate().plusDays(1).atStartOfDay();
             LocalDateTime pieceEnd = to.isBefore(midnight) ? to : midnight;
-            int minutes = (int) Duration.between(from, pieceEnd).toMinutes();
-            pieces.add(new Piece(from.toLocalDate(), new TimeInput(minutes, from.toLocalTime())));
+            int seconds = (int) Duration.between(from, pieceEnd).toSeconds();
+            pieces.add(new Piece(from.toLocalDate(), new TimeInput(seconds, from.toLocalTime())));
             from = pieceEnd;
         }
         if (pieces.isEmpty()) {
-            // started and stopped on the same clock minute
+            // started and stopped within the same second
             pieces.add(new Piece(from.toLocalDate(), new TimeInput(1, from.toLocalTime())));
         }
         return pieces;

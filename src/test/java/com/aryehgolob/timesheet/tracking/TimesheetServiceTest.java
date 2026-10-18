@@ -43,13 +43,13 @@ class TimesheetServiceTest extends IntegrationTest {
     class Adding {
 
         @Test
-        void storesExactMinutesAndTheStartOfARange() {
+        void storesExactSecondsAndTheStartOfARange() {
             Actor sam = data.user().asActor();
 
             long id = timesheets.addEntry(sam, data.task(), WEDNESDAY, "9:05-10:42", "  Kickoff  ");
 
             Map<String, Object> row = data.entry(id);
-            assertThat(row.get("minutes")).isEqualTo(97);
+            assertThat(row.get("seconds")).isEqualTo(5820);
             assertThat(row.get("start_time")).isEqualTo(java.sql.Time.valueOf(LocalTime.of(9, 5)));
             assertThat(row.get("note")).isEqualTo("Kickoff");
         }
@@ -122,7 +122,7 @@ class TimesheetServiceTest extends IntegrationTest {
 
             assertDenied(() -> timesheets.updateEntry(jo, samsEntry, 0, "8:00", null), Denial.NOT_OWNER);
             assertDenied(() -> timesheets.deleteEntry(jo, samsEntry), Denial.NOT_OWNER);
-            assertThat(data.entry(samsEntry).get("minutes")).isEqualTo(60);
+            assertThat(data.entry(samsEntry).get("seconds")).isEqualTo(3600);
         }
 
         @Test
@@ -145,7 +145,7 @@ class TimesheetServiceTest extends IntegrationTest {
 
             assertThatThrownBy(() -> timesheets.updateEntry(sam, id, 0, "3:00", null))
                     .isInstanceOf(StaleEntryException.class);
-            assertThat(data.entry(id).get("minutes")).isEqualTo(120);
+            assertThat(data.entry(id).get("seconds")).isEqualTo(7200);
         }
 
         @Test
@@ -155,7 +155,7 @@ class TimesheetServiceTest extends IntegrationTest {
 
             timesheets.updateEntry(sam, id, 0, "24:00", null);
 
-            assertThat(data.entry(id).get("minutes")).isEqualTo(1440);
+            assertThat(data.entry(id).get("seconds")).isEqualTo(86400);
         }
 
         @Test
@@ -180,10 +180,10 @@ class TimesheetServiceTest extends IntegrationTest {
             assertThat(trail).extracting(r -> r.get("actor_id")).containsOnly(sam.id());
 
             assertThat(trail.get(0).get("before")).isNull();
-            assertThat((String) trail.get(1).get("before")).contains("\"minutes\": 60", "\"note\": \"draft\"");
+            assertThat((String) trail.get(1).get("before")).contains("\"seconds\": 3600", "\"note\": \"draft\"");
             assertThat((String) trail.get(1).get("after"))
-                    .contains("\"minutes\": 90", "\"startTime\": \"09:00", "\"note\": \"final\"");
-            assertThat((String) trail.get(2).get("before")).contains("\"minutes\": 90");
+                    .contains("\"seconds\": 5400", "\"startTime\": \"09:00", "\"note\": \"final\"");
+            assertThat((String) trail.get(2).get("before")).contains("\"seconds\": 5400");
             assertThat(trail.get(2).get("after")).isNull();
             assertThat(data.entryCount(sam.id())).isZero();
         }
@@ -210,7 +210,7 @@ class TimesheetServiceTest extends IntegrationTest {
             Actor sam = data.user().asActor();
             long id = timesheets.addEntry(sam, data.task(), WEDNESDAY, "1:00", null);
 
-            assertThatThrownBy(() -> timesheets.updateEntry(sam, id, 0, "1.33", null))
+            assertThatThrownBy(() -> timesheets.updateEntry(sam, id, 0, "1.00001", null))
                     .isInstanceOf(InvalidInputException.class);
 
             assertThat(data.audit("time_entry", id)).hasSize(1);

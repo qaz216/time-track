@@ -61,15 +61,15 @@ class TeamReportsTest extends IntegrationTest {
 
             Row row = rowFor(sam);
 
-            assertThat(row.cells()).containsExactly(new Cell(WEEK_1, 510, true), new Cell(WEEK_2, 60, false));
-            assertThat(row.total()).isEqualTo(570);
+            assertThat(row.cells()).containsExactly(new Cell(WEEK_1, 30600, true), new Cell(WEEK_2, 3600, false));
+            assertThat(row.total()).isEqualTo(34200);
         }
 
         @Test
         void activePeopleWithNoTimeStillShowUpSoMissingWeeksAreVisible() {
             CurrentUser idle = data.user();
 
-            assertThat(rowFor(idle).cells()).allMatch(c -> c.minutes() == 0 && !c.submitted());
+            assertThat(rowFor(idle).cells()).allMatch(c -> c.seconds() == 0 && !c.submitted());
         }
 
         @Test
@@ -103,7 +103,7 @@ class TeamReportsTest extends IntegrationTest {
     class Csv {
 
         @Test
-        void hasOneRowPerPersonWeekAndTaskWithExactMinutes() throws IOException {
+        void hasOneRowPerPersonWeekAndTaskWithExactSeconds() throws IOException {
             CurrentUser sam = data.userNamed("Sam Csv");
             long dev = data.task("Website", "Acme", "Development");
             long meet = data.task("Website", "Acme", "Meetings");
@@ -120,11 +120,11 @@ class TeamReportsTest extends IntegrationTest {
                     .containsEntry("week_start", "2031-03-03").containsEntry("week_status", "submitted")
                     .containsEntry("client", "Acme").containsEntry("project", "Website")
                     .containsEntry("task", "Development").containsEntry("billable", "yes")
-                    .containsEntry("minutes", "100").containsEntry("hours", "1.67");
-            assertThat(rows.get(1).toMap()).containsEntry("task", "Meetings").containsEntry("minutes", "20")
+                    .containsEntry("seconds", "6000").containsEntry("hours", "1.67");
+            assertThat(rows.get(1).toMap()).containsEntry("task", "Meetings").containsEntry("seconds", "1200")
                     .containsEntry("hours", "0.33");
             assertThat(rows.get(2).toMap()).containsEntry("week_start", "2031-03-10")
-                    .containsEntry("week_status", "draft").containsEntry("minutes", "97");
+                    .containsEntry("week_status", "draft").containsEntry("seconds", "5820");
         }
 
         @Test

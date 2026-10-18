@@ -19,7 +19,7 @@
             <span th:if="${view.submitted()}" class="badge ok"
                   th:title="'Submitted ' + ${@fmt.moment(view.submittedAt())}">Submitted</span>
             <span th:unless="${view.submitted()}" class="badge">Draft</span>
-            <strong class="week-total" th:text="${@fmt.total(view.total())}">38:30</strong>
+            <strong class="week-total" th:text="${@fmt.duration(view.total())}">38:30</strong>
             <form th:if="${view.canSubmit()}" th:action="@{/weeks/{d}/submit(d=${weekStart})}" method="post"
                   th:attr="data-confirm=${view.total() == 0} ? 'Submit a week with no time logged?' : null">
                 <button type="submit" class="primary">Submit week</button>
@@ -35,7 +35,7 @@
 
     <section th:if="${ownWeek and timer != null and timer.longRunning()}" id="timer-review" class="card alert-card">
         <h2>Your timer has been running since <span th:text="${@fmt.moment(timer.startedAt())}">Wed 14 Oct, 22:30</span></h2>
-        <p>That's <strong th:text="${@fmt.total(timer.elapsedMinutes())}">16:20</strong> on
+        <p>That's <strong th:text="${@fmt.duration(timer.elapsedSeconds())}">16:20</strong> on
             <span th:text="${timer.taskLabel()}">ACME · Dev</span>. If you forgot it, say when you actually stopped.
             Time past midnight is split into one entry per day.</p>
         <form th:action="@{/timer/stop}" method="post" class="inline-form">
@@ -126,8 +126,8 @@
         <tbody>
         <tr th:each="row : ${view.rows()}">
             <th scope="row" th:text="${row.label()}">ACME · Dev</th>
-            <td th:each="m : ${row.minutesPerDay()}" th:text="${@fmt.minutes(m)}">1:30</td>
-            <td class="total" th:text="${@fmt.total(row.total())}">7:30</td>
+            <td th:each="m : ${row.secondsPerDay()}" th:text="${@fmt.cell(m)}">1:30</td>
+            <td class="total" th:text="${@fmt.duration(row.total())}">7:30</td>
         </tr>
         <tr th:if="${view.rows().isEmpty()}">
             <td colspan="9" class="muted empty">Nothing logged this week yet.</td>
@@ -136,8 +136,8 @@
         <tfoot>
         <tr>
             <th scope="row">Total</th>
-            <td th:each="m : ${view.dayTotals()}" th:text="${@fmt.minutes(m)}">7:30</td>
-            <td class="total" th:text="${@fmt.total(view.total())}">38:30</td>
+            <td th:each="m : ${view.dayTotals()}" th:text="${@fmt.cell(m)}">7:30</td>
+            <td class="total" th:text="${@fmt.duration(view.total())}">38:30</td>
         </tr>
         </tfoot>
     </table>
@@ -148,14 +148,14 @@
                  th:classappend="${d == today} ? 'today'">
             <h2>
                 <span th:text="${@fmt.relativeDay(d)}">Fri 16 Oct</span>
-                <span class="day-total" th:text="${@fmt.total(view.dayTotal(d))}">7:30</span>
+                <span class="day-total" th:text="${@fmt.duration(view.dayTotal(d))}">7:30</span>
                 <span th:if="${view.locked(d)}" class="badge">Locked</span>
             </h2>
             <ul class="entries" th:unless="${lines.isEmpty()}">
                 <li th:each="e : ${lines}">
                     <th:block th:if="${editId == null or editId != e.id() or !view.canEdit(d)}">
                         <span class="range" th:text="${e.isRange()} ? ${e.asTyped()} : ''">09:05-10:42</span>
-                        <span class="duration" th:text="${@fmt.total(e.minutes())}">1:37</span>
+                        <span class="duration" th:text="${@fmt.duration(e.seconds())}">1:37</span>
                         <span class="task"><span class="dot" th:style="'background:' + ${e.colour()}"></span>
                             <span th:text="${e.taskLabel()}">Strategic Planning</span></span>
                         <span class="note" th:text="${e.note()}">Standup</span>

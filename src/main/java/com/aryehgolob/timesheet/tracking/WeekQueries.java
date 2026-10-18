@@ -53,7 +53,7 @@ public class WeekQueries {
             throw new NotFoundException("There's no such person.");
         }
         List<EntryLine> lines = jdbc.query("""
-                select e.id, %s as label, p.id as project_id, e.work_date, e.minutes, e.start_time, e.note, e.version
+                select e.id, %s as label, p.id as project_id, e.work_date, e.seconds, e.start_time, e.note, e.version
                 from time_entry e
                 join task t on t.id = e.task_id
                 join project p on p.id = t.project_id
@@ -75,7 +75,7 @@ public class WeekQueries {
         boolean canReopen = EditPolicy.canReopen(actor, ownerId, week, submitted, lock).isAllowed();
 
         return new WeekView(ownerId, ownerName, week, rows(lines, week), dayTotals(lines, week),
-                lines.stream().mapToInt(EntryLine::minutes).sum(), byDay(lines, week), submittedAt, lock, editable,
+                lines.stream().mapToInt(EntryLine::seconds).sum(), byDay(lines, week), submittedAt, lock, editable,
                 canSubmit, canReopen);
     }
 
@@ -84,7 +84,7 @@ public class WeekQueries {
         lines.stream()
                 .sorted((a, b) -> a.taskLabel().compareToIgnoreCase(b.taskLabel()))
                 .forEach(line -> perTask.computeIfAbsent(line.taskLabel(), k -> new int[7])
-                        [dayIndex(week, line.date())] += line.minutes());
+                        [dayIndex(week, line.date())] += line.seconds());
         List<TaskRow> rows = new ArrayList<>();
         perTask.forEach((label, days) -> rows.add(new TaskRow(label, Arrays.stream(days).boxed().toList(), Arrays.stream(days).sum())));
         return rows;
@@ -92,7 +92,7 @@ public class WeekQueries {
 
     private static List<Integer> dayTotals(List<EntryLine> lines, WorkWeek week) {
         int[] totals = new int[7];
-        lines.forEach(line -> totals[dayIndex(week, line.date())] += line.minutes());
+        lines.forEach(line -> totals[dayIndex(week, line.date())] += line.seconds());
         return Arrays.stream(totals).boxed().toList();
     }
 

@@ -34,15 +34,15 @@ public record WeekView(
         boolean canSubmit,
         boolean canReopen) {
 
-    public record TaskRow(String label, List<Integer> minutesPerDay, int total) {
+    public record TaskRow(String label, List<Integer> secondsPerDay, int total) {
     }
 
-    public record EntryLine(long id, String taskLabel, long projectId, LocalDate date, int minutes,
+    public record EntryLine(long id, String taskLabel, long projectId, LocalDate date, int seconds,
             LocalTime startTime, String note, int version) {
 
-        /** "09:05-10:42" or "1:37", for display and to pre-fill the edit box. */
+        /** "09:05-10:42" or "1:37:00", for display and to pre-fill the edit box. */
         public String asTyped() {
-            return new TimeInput(minutes, startTime).asTyped();
+            return new TimeInput(seconds, startTime).asTyped();
         }
 
         public boolean isRange() {

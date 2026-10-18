@@ -98,7 +98,7 @@ class WeekSubmissionServiceTest extends IntegrationTest {
         List<Map<String, Object>> trail = data.audit("week", sam.id() + ":2026-10-12");
         assertThat(trail).extracting(r -> r.get("action")).containsExactly("SUBMIT", "REOPEN");
         assertThat(trail).extracting(r -> r.get("actor_id")).containsExactly(sam.id(), admin.id());
-        assertThat((String) trail.get(0).get("after")).contains("\"minutes\": 450");
+        assertThat((String) trail.get(0).get("after")).contains("\"seconds\": 27000");
     }
 
     private static void assertDenied(org.assertj.core.api.ThrowableAssert.ThrowingCallable call, Denial denial) {

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.aryehgolob.timesheet.tracking.domain.TimeInput;
 
-/** Display formats, used from templates as {@code ${@fmt.minutes(m)}}. */
+/** Display formats, used from templates as {@code ${@fmt.duration(seconds)}}. */
 @Component("fmt")
 public class Formats {
 
@@ -26,12 +26,14 @@ public class Formats {
         this.clock = clock;
     }
 
-    public String minutes(int minutes) {
-        return minutes == 0 ? "" : TimeInput.format(minutes);
+    /** A duration as h:mm:ss, like Clockify: 47 seconds is "0:00:47". */
+    public String duration(long seconds) {
+        return TimeInput.format(seconds);
     }
 
-    public String total(int minutes) {
-        return TimeInput.format(minutes);
+    /** For grid cells: empty when nothing was logged, so the eye finds the real numbers. */
+    public String cell(long seconds) {
+        return seconds == 0 ? "" : TimeInput.format(seconds);
     }
 
     public String day(LocalDate date) {

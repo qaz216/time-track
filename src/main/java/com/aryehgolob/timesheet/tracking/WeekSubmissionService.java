@@ -24,7 +24,7 @@ public class WeekSubmissionService {
     static final String AUDIT_TYPE = "week";
 
     /** What the audit log records: whose week, and how much time it held at that moment. */
-    record WeekSnapshot(long userId, LocalDate weekStart, long minutes) {
+    record WeekSnapshot(long userId, LocalDate weekStart, long seconds) {
     }
 
     private final WeekSubmissions submissions;
@@ -60,7 +60,7 @@ public class WeekSubmissionService {
     }
 
     private WeekSnapshot snapshot(long ownerId, WorkWeek week) {
-        return new WeekSnapshot(ownerId, week.start(), entries.minutesBetween(ownerId, week.start(), week.end()));
+        return new WeekSnapshot(ownerId, week.start(), entries.secondsBetween(ownerId, week.start(), week.end()));
     }
 
     static String key(long ownerId, WorkWeek week) {

@@ -28,7 +28,7 @@ public class TeamReports {
 
     static final String[] CSV_COLUMNS = {
             "email", "name", "week_start", "week_status", "client", "project_code", "project", "task",
-            "billable", "minutes", "hours"};
+            "billable", "seconds", "hours"};
 
     private final JdbcTemplate jdbc;
 
@@ -40,13 +40,13 @@ public class TeamReports {
     @Transactional(readOnly = true)
     public TeamOverview overview(Actor actor, ReportPeriod period) {
         requireAdmin(actor);
-        Map<String, Integer> minutes = new HashMap<>();
+        Map<String, Integer> seconds = new HashMap<>();
         jdbc.query("""
-                select user_id, date_trunc('week', work_date)::date as week_start, sum(minutes) as minutes
+                select user_id, date_trunc('week', work_date)::date as week_start, sum(seconds) as seconds
                 from time_entry where work_date between ? and ?
                 group by user_id, week_start
                 """,
-                rs -> { minutes.put(key(rs.getLong(1), rs.getObject(2, LocalDate.class)), rs.getInt(3)); },
+                rs -> { seconds.put(key(rs.getLong(1), rs.getObject(2, LocalDate.class)), rs.getInt(3)); },
                 period.start(), period.end());
         Set<String> submitted = new HashSet<>(jdbc.query(
                 "select user_id, week_start from week_submission where week_start between ? and ?",
@@ -62,11 +62,11 @@ public class TeamReports {
                 (rs, i) -> {
                     long userId = rs.getLong(1);
                     List<Cell> cells = period.weeks().stream()
-                            .map(week -> new Cell(week, minutes.getOrDefault(key(userId, week.start()), 0),
+                            .map(week -> new Cell(week, seconds.getOrDefault(key(userId, week.start()), 0),
                                     submitted.contains(key(userId, week.start()))))
                             .toList();
                     return new Row(userId, rs.getString(2), rs.getString(3), rs.getBoolean(4), cells,
-                            cells.stream().mapToInt(Cell::minutes).sum());
+                            cells.stream().mapToInt(Cell::seconds).sum());
                 },
                 period.start(), period.end());
         return new TeamOverview(period, rows);
@@ -74,7 +74,7 @@ public class TeamReports {
 
     /**
      * One row per person × week × task: a flat shape finance can pivot however
-     * they like. {@code minutes} is exact and is the number to reconcile on;
+     * they like. {@code seconds} is exact and is the number to reconcile on;
      * {@code hours} is the same value to two decimals, for humans.
      */
     @Transactional(readOnly = true)
@@ -83,7 +83,7 @@ public class TeamReports {
         try (CSVPrinter csv = new CSVPrinter(out, CSVFormat.DEFAULT.builder().setHeader(CSV_COLUMNS).get())) {
             jdbc.query("""
                     select u.email, u.display_name, w.week_start, (s.user_id is not null) as submitted,
-                           p.client, p.code, p.name as project, t.name as task, t.billable, sum(e.minutes) as minutes
+                           p.client, p.code, p.name as project, t.name as task, t.billable, sum(e.seconds) as seconds
                     from time_entry e
                     cross join lateral (select date_trunc('week', e.work_date)::date as week_start) w
                     join app_user u on u.id = e.user_id
@@ -95,14 +95,14 @@ public class TeamReports {
                     order by u.display_name, u.email, w.week_start, p.code, t.name
                     """,
                     rs -> {
-                        int mins = rs.getInt("minutes");
+                        int secs = rs.getInt("seconds");
                         print(csv, safe(rs.getString("email")), safe(rs.getString("display_name")),
                                 rs.getObject("week_start", LocalDate.class),
                                 rs.getBoolean("submitted") ? "submitted" : "draft",
                                 safe(rs.getString("client")), safe(rs.getString("code")),
                                 safe(rs.getString("project")), safe(rs.getString("task")),
                                 rs.getBoolean("billable") ? "yes" : "no",
-                                mins, hours(mins));
+                                secs, hours(secs));
                     },
                     period.start(), period.end());
         } catch (IOException e) {
@@ -110,8 +110,8 @@ public class TeamReports {
         }
     }
 
-    static BigDecimal hours(int minutes) {
-        return BigDecimal.valueOf(minutes).divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
+    static BigDecimal hours(int seconds) {
+        return BigDecimal.valueOf(seconds).divide(BigDecimal.valueOf(3600), 2, RoundingMode.HALF_UP);
     }
 
     /**
