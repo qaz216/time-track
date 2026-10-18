@@ -18,6 +18,14 @@ Then open http://localhost:8080 (port taken? `APP_PORT=8090 docker compose up --
 
 The demo data includes three weeks of time for Sam and Jo, with one of Jo's weeks left unsubmitted, so the admin view has something to show. To start fresh: `docker compose down -v`.
 
+Or run it with Maven alone (JDK 21 and Docker running; no Compose, no Postgres to install):
+
+```bash
+./mvnw spring-boot:test-run -Dspring-boot.run.profiles=dev
+```
+
+That starts the app with a throwaway Postgres container (Testcontainers) and the demo data. It's handy for development, and the database is gone when you stop it. Add `-Dspring-boot.run.arguments=--server.port=8090` if 8080 is taken.
+
 Run the tests (needs Docker running, for Testcontainers):
 
 ```bash
